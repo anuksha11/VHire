@@ -19,7 +19,7 @@ const DashboardCandidate: React.FC = () => {
             alert("Please Generate Room Id First");
             return;
         }
-        navigate(`room/${roomId}?type=one-on-one`);
+        navigate(`room/${roomId}?type=one-on-one&name=${encodeURIComponent(name)}`);
     };
 
     const handleGroupCall = () => {
