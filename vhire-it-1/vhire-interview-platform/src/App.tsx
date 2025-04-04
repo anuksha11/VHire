@@ -5,6 +5,7 @@ import Header from './components/Header';
 import { UserProvider } from './context/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useUser } from './context/UserContext';
+import CreateScheduleMeet from './components/interviewer/CreateScheduleMeet';
 
 // Lazy loading components for performance optimization
 const Login = lazy(() => import('./components/Login'));
@@ -68,6 +69,14 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <Profile />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/createschedulemeet"
+                                    element={
+                                        <ProtectedRoute>
+                                            <CreateScheduleMeet />
                                         </ProtectedRoute>
                                     }
                                 />

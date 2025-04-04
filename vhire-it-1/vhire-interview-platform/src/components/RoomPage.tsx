@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import { APPID, SERVERSECRET } from '../config/zegoconfig';
 
 const RoomPage: React.FC = () => {
     const { roomId } = useParams();
     const location = useLocation();
+
 
     // Function to parse query parameters
     const getQueryParams = (search: any) => {
@@ -22,6 +24,14 @@ const RoomPage: React.FC = () => {
     const [callType, setCallType] = useState("");
     const [copied, setCopied] = useState(false);
 
+    const handleLeaveRoom = () => {
+        if (zpRef.current) {
+            
+            zpRef.current.destroy();
+        }
+        navigate("/dashboard");
+    };
+
     useEffect(() => {
         const query = new URLSearchParams(location.search);
         const type = query.get("type");
@@ -31,8 +41,9 @@ const RoomPage: React.FC = () => {
     useEffect(() => {
         if (!callType || !roomId) return;
         
-        const appID = 1803852747;
-        const serverSecret = "a039bd3defe5b6b9aa0d23d3fcd43438";
+        const appID: number = APPID;
+        const serverSecret: string = SERVERSECRET;
+        console.log(appID, serverSecret);
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomId, Date.now().toString(), name?.toString() || "");
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zpRef.current = zp;
@@ -41,10 +52,10 @@ const RoomPage: React.FC = () => {
             container: videoContainerRef.current,
             scenario: { mode: callType === "one-on-one" ? ZegoUIKitPrebuilt.OneONoneCall : ZegoUIKitPrebuilt.GroupCall },
             maxUsers: callType === "one-on-one" ? 2 : 10,
-            onLeaveRoom: () => navigate("/"),
+            onLeaveRoom: () => handleLeaveRoom(),
         });
         
-        return () => zp.destroy();
+        // return () => zp.destroy();
     }, [callType, roomId, navigate]);
 
     const handleCopyRoomId = async () => {
@@ -59,7 +70,7 @@ const RoomPage: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen w-full flex-col bg-gray-50">
+        <div className="flex flex-col h-screen bg-gray-50">
             <div className="w-full bg-white shadow-md p-4">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4">
@@ -79,14 +90,14 @@ const RoomPage: React.FC = () => {
                         </div>
                     </div>
                     <button 
-                        onClick={() => navigate("/")} 
+                        onClick={() => handleLeaveRoom()} 
                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
                     >
                         Exit
                     </button>
                 </div>
             </div>
-            <div ref={videoContainerRef} className="flex-1 w-full h-full" />
+            <div ref={videoContainerRef} className="flex-1 flex justify-center items-center" />
         </div>
     );
 };
