@@ -1,93 +1,155 @@
-About the Project
-VHire is a job hiring web application that connects recruiters with job seekers. 
-The platform streamlines the hiring process with a user-friendly interface, real-time updates, and organized job listings.
+# VHire Iteration 1
+Many companies face challenges in conducting interviews, as their tech teams are often engaged in the interview process voluntarily, which can lead to vague and inconsistent interviews and requires too much of their bandwidth for this. To address this, we propose developing software that outsources the first or technical round of interviews. This solution will benefit both candidates and companies by offering a seamless interview experience for applicants while making it easier for companies to shortlist candidates.Additionally, it will significantly reduce the effort required from engineering teams during the technical round of the hiring process.
 
-✨ Features
-User Authentication – Secure login and registration for candidates, companies, and admins.
-Company Registration – Companies can register, post job openings, and view a filtered list of candidates.
-Candidate Management – Companies can shortlist and access candidate profiles and resumes.
-Admin Dashboard – Admins can manage users, companies, and schedule interviews.
-Interview Scheduling – Admin can schedule interviews and assign interviewers.
-Live Code Editor Integration – In-browser coding rounds powered by a code editor API.
-Google Meet Integration – Seamless video interviews using the Google Meet API.
-Payment Gateway – Payments handled via company-side payment API.
-Interviewer Payment System – Interviewers are paid automatically post-interview.
-Notifications – Real-time notifications and updates for interview schedules and application status.
-Resume Upload & Profile Management – Candidates can upload resumes and maintain personal profiles.
+## Technologies Used
 
+- **React.js**: For the frontend framework
+- **Zegocloud**: A real-time audio and video communication service used for video conferencing.
+- **Node.js**: For backend development.
+- **Tailwind CSS**: Styling framework
+- **Socket.io**: For bidirectional communication between clients and servers.
+- **FireBase** : Database
 
-🛠️ Tech Stack
-Frontend: React.js, HTML, CSS, Bootstrap
-Backend: Node.js, Express.js
-Database: Firebase database
-Others: JWT Auth, Cloudinary (for image upload), etc.
+## Modules
+The project is divided into two main parts:
 
-🔧 Installation/ Running the Code:
-Clone the repo:
+### 📦 1. `backend/`
 
-1. git clone https://github.com/anuksha11/VHire.git
-2. git checkout origin/iteration-2
-3. cd vhire-it-1 (change directotry)
-4. cd backend     
-5. npm install (to install all node modules)
-6. npm start (to run the backend)
+This directory contains the backend logic for the platform. It manages api calls.
 
-Open new Terminal(For Running Frontend):
-1. cd vhire-it-1 (change directotry)
-2. cd vhire-interview-platform
-3. npm install (to install all node modules)
-4. npm start (to run the frontend)
+---
+
+### 💻 2. `vhire-interview-platform/`
+
+This directory contains the frontend codebase built using **React + TypeScript**. It includes components and pages for candidates, companies, and interviewers.
+#### 📁 `src/services`:
+Handles user authentication and profile management using Firebase Authentication and Firestore. It includes methods for user registration, login, profile updates, and logout.
+#### 📁 `src/context`:
+Provides a centralized way to manage user login/logout state across the app using Context API, including saving the user to localStorage so they stay logged in across page reloads.
+
+#### 📁 `src/components/`
+
+##### 🔹 `candidate/`
+Components specific to candidates:
+- View the dashboard of the candidate
+- Join interview rooms
 
 
-🚀 Usage
-Register as a candiadte or company or interviewer
-In company dashboard, company will register,provide company and candidate details to be interviewed.
-In candidate dashboard, candiadte will see the interview room ID link
-In Interviewer Dashboard, Interview can schedule the meeting for Interview of candidate.
+##### 🔹 `company/`
+- Schedule interviews
+- View and manage interview reports
+- Manage rooms and candidate assignments
 
-Main Modules Description:
+##### 🔹 `interviewer/`
+Components used by interviewers:
+- Conduct live interviews
+- Submit reports with scoring and verdicts
+- Access candidate details
 
-1. Authentication Module
-Handles user login, registration, and role-based access (Candidate, Company, Admin). Uses JWT for session management and route protection.
+#####  Top-Level Components
 
-2. Candidate Module
-Manage profile and resume.
-Receive interview notifications.
-Attend interviews via integrated Google Meet.
-Participate in coding rounds through embedded code editor.
+- **`Header.tsx`**  
+  Navigation bar component shared across all pages.
 
-3. Company Module
-Register and log in to post job openings.
-Browse and shortlist candidates.
-Make payments to schedule interviews.
-View interview schedules and results.
+- **`Home.tsx`**  
+  Landing page with an overview.
 
-4. Admin Module
-Manage users (candidates, companies, interviewers).
-Approve or reject company registrations.
-Assign interviewers and schedule interviews.
-Monitor payment status and overall platform activity.
+- **`Login.tsx`**  
+  User login component. Supports all user types (candidate, company, interviewer).
 
-5. Interview Scheduling Module
-Schedule interviews between companies and candidates.
-Generate Google Meet links for live interviews.
-Assign interviewers automatically or manually.
-Notify all parties involved (email or in-app notifications).
+- **`Profile.tsx`**  
+  User profile page. Allows updating user-specific information.
 
-6. Code Editor Module
-Embeds a live coding environment using a third-party API.
-Allows interviewers to evaluate coding skills in real time.
-Supports multiple programming languages.
+- **`ProtectedRoute.tsx`**  
+  Wrapper component to restrict access to routes for unauthenticated users.
 
-7. Payment Module
-Integrates a payment gateway (e.g., Razorpay/Stripe).
-Companies pay to conduct interviews.
-Interviewers are compensated post-interview.
-Admin can track all transactions.
+- **`Register.tsx`**  
+  Registration page for all roles. Sends form data to backend for account creation.
 
-8. Notification Module
-Sends real-time updates to users (via socket.io or other tech).
-Interview schedules, application status, payment confirmations, etc.
+- **`Report.tsx`**  
+  Interview report form for interviewers to score and give verdicts on candidates.
 
+- **`RoomPage.tsx`**  
+  Real-time collaborative interview room with:
+  - Code editor (CodeMirror)
+  - Socket.io integration for real-time code sharing
+  - AI Chatbot assistant
+  - Video Conferencing Engine
+
+
+## Features:
+
+1. **User Authentication** – Secure login and registration for candidates, companies, and admins.
+2. **Company Registration** – Companies can register, post job openings, and view a filtered list of candidates.
+3. **Candidate Management** – Companies can shortlist and access candidate profiles and resumes.
+4. **Collaborative Code Editor and Compiler** – In-browser coding rounds powered by a One Compiler and Code Mirror API .
+5. **Chatbot** - Chatbot to help assist the interviewers.
+6. **Video Conferencing Engine** – Seamless video interviews using the Zego Cloud API.
+7. **Report Generation** by the Interviewer
+
+## How to use the apis:
+### Gemini API:
+1. Open the link "https://aistudio.google.com/u/1/apikey" and signup with your gmail.
+2. Click on Create API Key
+3. Copy the API Key
+   
+### One Compiler API:
+1. Open "https://rapidapi.com" in your browser and signup with your gmail.
+2. In the "Search APIs" button type One Compiler APIs and select the api.
+3. Copy the "X-RapidAPI-Key"
+   
+## Steps to run the application
+### Steps to run the backend:
+1. Clone the github repo:
+   ```bash
+   git clone https://github.com/anuksha11/VHire.git
+   ```
+2. Change Directory:
+   ```bash
+   cd VHire
+   ```
+3. Change the branch:
+   ```bash
+   git checkout iteration-2
+   ```
+4. To change the directory:
+   ```bash
+   cd vhire-it-1 
+   ```
+5. To change the directory:
+   ```bash
+   cd backend
+   ```   
+6. Install the dependencies:
+   ```bash
+   npm install (to install all node modules)
+   ```
+7. Create a .env file in the backend directory.
+8. Paste the following in the .env file(paste your gemini and one compiler api keys along with this)
+   ```
+   GOOGLE_GENAI_API_KEY=
+   RAPIDAPI_KEY=
+   RAPIDAPI_HOST=onecompiler-apis.p.rapidapi.com
+   ONE_COMPILER_API_URL=https://onecompiler-apis.p.rapidapi.com/api/v1/run
+   ```
+9. Run the command:
+   ```bash
+   npm start (to run the backend)
+   ```
+
+### Open new Terminal(For Running Frontend):
+1. 
+   ```bash
+   cd vhire-it-1 (change directotry)
+   ```
+3. ```bash
+   cd vhire-interview-platform
+   ```
+4. ```bash
+   npm install (to install all node modules)
+   ```
+5. ```bash
+   npm start (to run the frontend)
+   ```
 
 
