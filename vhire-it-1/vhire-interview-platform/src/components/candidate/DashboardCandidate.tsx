@@ -44,11 +44,20 @@ const DashboardCandidate: React.FC = () => {
 
   const handleJoinMeet = () => {
     if (selectedInterview && user && user.email === selectedInterview.candidateEmail) {
+        console.log(selectedInterview);
       navigate(
-        `/room/${selectedInterview.roomId}?type=one-on-one&name=${encodeURIComponent(user.name)}`
+        `room/${selectedInterview.roomId}?type=one-on-one&name=${encodeURIComponent(user.name)}`
       );
     }
   };
+
+  const handleUrgentJoinMeet = () => {
+        if(user){
+            navigate(
+                `room/${roomId}?type=one-on-one&name=${encodeURIComponent(name)}`
+            );
+        }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -89,7 +98,7 @@ const DashboardCandidate: React.FC = () => {
                 />
               </div>
               <button
-                onClick={handleJoinMeet}
+                onClick={handleUrgentJoinMeet}
                 disabled={!name.trim() || !roomId.trim()}
                 className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
