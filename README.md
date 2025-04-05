@@ -132,7 +132,20 @@ Components used by interviewers:
    RAPIDAPI_HOST=onecompiler-apis.p.rapidapi.com
    ONE_COMPILER_API_URL=https://onecompiler-apis.p.rapidapi.com/api/v1/run
    ```
-9. Run the command:
+9. Paste the following in the .env file(in vhire-interview-platform for frontend )
+   ```
+   REACT_APP_FIREBASE_API_KEY=AIzaSyDvCpgPVqkK-7iQQHflEtyFEHrzvRXqGlA
+   REACT_APP_FIREBASE_AUTH_DOMAIN=vhire-auth-backend.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=vhire-auth-backend
+   REACT_APP_FIREBASE_STORAGE_BUCKET=vhire-auth-backend.firebasestorage.app
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=1003604212360
+   REACT_APP_FIREBASE_APP_ID=1:1003604212360:web:fc5220d005f44ad2b47d3d
+   REACT_APP_FIREBASE_MEASUREMENT_ID=G-HTW50NEQKH
+
+   REACT_APP_ZEGO_APP_ID=1803852747
+   REACT_APP_ZEGO_SERVER_SECRET=a039bd3defe5b6b9aa0d23d3fcd43438
+   ```
+10. Run the command:
    ```bash
    npm start (to run the backend)
    ```
@@ -142,13 +155,13 @@ Components used by interviewers:
    ```bash
    cd vhire-it-1 (change directotry)
    ```
-3. ```bash
+2. ```bash
    cd vhire-interview-platform
    ```
-4. ```bash
+3. ```bash
    npm install (to install all node modules)
    ```
-5. ```bash
+4. ```bash
    npm start (to run the frontend)
    ```
 
