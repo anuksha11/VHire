@@ -16,12 +16,12 @@ const io = new Server(server, {
     },
   });
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const genAI = new GoogleGenerativeAI("AIzaSyBXh_QAT7pwIrNyg2Lv1iLTlPd3ysr4IaA");
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY);
 
-const ONE_COMPILER_API = "https://onecompiler-apis.p.rapidapi.com/api/v1/run";
+const ONE_COMPILER_API = process.env.ONE_COMPILER_API_URL;
 const API_HEADERS = {
-  "X-RapidAPI-Key": "8fe82ae1f1mshf29d1139a0f8235p15a71ajsne058dbca23d5", // Replace with your API Key
-  "X-RapidAPI-Host": "onecompiler-apis.p.rapidapi.com",
+  "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+  "X-RapidAPI-Host": process.env.RAPIDAPI_HOST,
   "Content-Type": "application/json",
 };
 

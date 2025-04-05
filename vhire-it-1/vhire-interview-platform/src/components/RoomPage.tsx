@@ -10,6 +10,8 @@ import { java } from "@codemirror/lang-java";
 import { javascript } from "@codemirror/lang-javascript";
 import { Extension } from '@codemirror/state';
 import axios from "axios";
+import { db } from "../firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 
 const socket = io("http://localhost:5001");
 const languages: {
@@ -59,23 +61,56 @@ const RoomPage: React.FC = () => {
     }, [location.search]);
 
     useEffect(() => {
-        if (!callType || !roomId) return;
+        if (!callType || !roomId ||!user) return;
         
         const appID = 1803852747;
         const serverSecret = "a039bd3defe5b6b9aa0d23d3fcd43438";
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomId, Date.now().toString(), name?.toString() || "");
         const zp = ZegoUIKitPrebuilt.create(kitToken);
-        zpRef.current = zp;
-        
+        zpRef.current = zp; 
+        const storeRoomInfo = async () => {
+            try {
+                await setDoc(doc(db, "interview_report", roomId), {
+                    interviewerEmail: user.email,
+                    timestamp: new Date().toISOString(),
+                    status: 'ongoing'
+                });
+            } catch (error) {
+                console.error("Error storing room info:", error);
+            }
+        };
+
+        if (user.role === 'interviewer') {
+            storeRoomInfo();
+        }
         zp.joinRoom({
             container: videoContainerRef.current,
             scenario: { mode: callType === "one-on-one" ? ZegoUIKitPrebuilt.OneONoneCall : ZegoUIKitPrebuilt.GroupCall },
             maxUsers: callType === "one-on-one" ? 2 : 10,
-            onLeaveRoom: () => navigate("/"),
+            onJoinRoom: ()=>{
+                console.log(user);
+            },
+            onLeaveRoom: () => {
+                if (user?.role === 'interviewer') {
+                    navigate('/report', {
+                        state: {
+                            roomId
+                        }
+                    });
+                } else if (user?.role === 'candidate') {
+                    // Update the document with candidate email when they join
+                    setDoc(doc(db, "interview_report", roomId), {
+                        candidateEmail: user.email
+                    }, { merge: true });
+                    navigate('/dashboard');
+                } else {
+                    navigate('/dashboard');
+                }
+            },
         });
         
-        return () => zp.destroy();
-    }, [callType, roomId, navigate]);
+        // return () => zp.destroy();
+    }, [callType, roomId, navigate, user, name, location.search]);
 
     useEffect(() => {
         console.log("Joining room:", roomId);
