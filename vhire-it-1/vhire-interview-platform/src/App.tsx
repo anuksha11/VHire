@@ -16,6 +16,7 @@ const DashboardInterviewer = lazy(() => import('./components/interviewer/Dashboa
 const Home = lazy(() => import('./components/Home'));
 const RoomPage = lazy(() => import('./components/RoomPage'));
 const Profile = lazy(() => import('./components/Profile'));
+const Report = lazy(()=>import('./components/Report'))
 // const NotFound = lazy(() => import('./components/NotFound')); // Create a NotFound.tsx
 
 const DashboardRouter: React.FC = () => {
@@ -77,6 +78,14 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <CreateScheduleMeet />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/report"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Report />
                                         </ProtectedRoute>
                                     }
                                 />

@@ -120,7 +120,7 @@ const DashboardInterviewer: React.FC = () => {
                 New Schedule
               </button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-64 overflow-y-auto">
               {upcomingInterviews.length ? (
                 upcomingInterviews.map(interview => (
                   <button
