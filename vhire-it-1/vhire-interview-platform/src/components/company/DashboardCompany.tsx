@@ -1,135 +1,239 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Papa from 'papaparse';
+import { db } from '../../config/firebaseConfig';
+import { useUser } from '../../context/UserContext';
+import { collection, addDoc ,query, where, getDocs} from 'firebase/firestore';
 
-const DashboardCompany: React.FC = () => {
+interface InterviewRow {
+    candidateEmail: string;
+    jobDesc: string;
+    role: string;
+    skills: string;
+    pointers: string;
+    deadline: string;
+  }
+  
+  const DashboardCompany: React.FC = () => {
     const navigate = useNavigate();
     const [roomId, setRoomId] = useState('');
-    const [name, setName] = useState('');
-    const [callType, setCallType] = useState<'one-on-one' | 'group' | null>(null);
+    const [interviews, setInterviews] = useState<any[]>([]);
+    const [parsedData, setParsedData] = useState<InterviewRow[]>([]);
+    const [selectedFileName, setSelectedFileName] = useState<string>('');
+    const {user,login}= useUser();
 
-    const handleRoomIdGenerate = () => {
-        const randomId = Math.random().toString(36).substring(2, 9);
-        const timestamp = Date.now().toString().substring(-4);
-        setRoomId(randomId + timestamp);
+    const getCompanyNameByEmail = async () => {
+        const companyRef = collection(db, 'company_users');
+        const querySnapshot = await getDocs(query(companyRef, where("email", "==", user?.email)));
+        const companyDoc = querySnapshot.docs[0];
+        return companyDoc ? companyDoc.data().companyName : null;  // return the company name if found
+      };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+  
+      setSelectedFileName(file.name);
+  
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results: Papa.ParseResult<any>) => {
+          const data = results.data.map((row) => ({
+            candidateEmail: row['candidate email'],
+            jobDesc: row['job desc'],
+            role: row['role'],
+            skills: row['skills'],
+            pointers: row['pointers'],
+            deadline: row['deadline'],
+          }));
+          setParsedData(data);
+        },
+      });
     };
-
-    const handleOneAndOneCall = () => {
-        if (!roomId) {
-            alert("Please Generate Room Id First");
+  
+    const handleSubmitToDatabase = async () => {
+      const interviewsRef = collection(db, 'interviews_request');
+      for (const row of parsedData) {
+        const companyName = await getCompanyNameByEmail();
+        if (companyName) {
+            const interviewData = {
+              candidateEmail: row.candidateEmail,
+              jobDesc: row.jobDesc,
+              role: row.role,
+              skills: row.skills,
+              pointers: row.pointers,
+              deadline: row.deadline,
+              companyName: companyName, // Add company name
+            };
+            await addDoc(interviewsRef, interviewData);
+          }
+      }
+      setParsedData([]);
+      setSelectedFileName('');
+      fetchInterviews();
+    };
+  
+    const fetchInterviews = async () => {
+        const interviewsRef = collection(db, 'interviews_request');
+        const companyName = await getCompanyNameByEmail();  // Replace with dynamic value or state
+        if (!companyName) {
+            console.error('No company found for this email.');
             return;
-        }
-        navigate(`room/${roomId}?type=one-on-one`);
+          }      
+        const q = query(interviewsRef, where("companyName", "==", companyName));
+        
+        const querySnapshot = await getDocs(q);
+        const interviewsData = querySnapshot.docs.map(doc => doc.data());
+        setInterviews(interviewsData);
     };
-
-    const handleGroupCall = () => {
-        if (!roomId) {
-            alert("Please Generate Room Id First");
-            return;
-        }
-        navigate(`room/${roomId}?type=group-call`);
-    };
-
-    const copyToClipboard = () => {
-        let link = `https://localhost:3000/room/${roomId}`;
-        navigator.clipboard.writeText(link);
-    };
-
+  
+    useEffect(() => {
+      fetchInterviews();
+    }, []);
+  
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="mx-auto max-w-4xl">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Company Dashboard</h1>
-                    <p className="mt-2 text-gray-600">Schedule and manage interviews</p>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                    <div className="rounded-xl bg-white p-6 shadow-lg">
-                        <h2 className="mb-4 text-xl font-semibold text-gray-900">Schedule Interview</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
-                                    Interviewer Name
-                                </label>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Enter interviewer name"
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => setCallType('one-on-one')}
-                                    className={`flex items-center justify-center gap-2 rounded-lg p-4 transition-all ${
-                                        callType === 'one-on-one'
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    One on One
-                                </button>
-                                <button
-                                    onClick={() => setCallType('group')}
-                                    className={`flex items-center justify-center gap-2 rounded-lg p-4 transition-all ${
-                                        callType === 'group'
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    Group Call
-                                </button>
-                            </div>
-                            <button
-                                onClick={handleRoomIdGenerate}
-                                disabled={!name.trim() || !callType}
-                                className="w-full rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
-                            >
-                                Generate Link
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="rounded-xl bg-white p-6 shadow-lg">
-                        <h2 className="mb-4 text-xl font-semibold text-gray-900">Upcoming Interviews</h2>
-                        <div className="space-y-4">
-                            <div className="rounded-lg border border-gray-200 p-4">
-                                <h3 className="font-medium text-gray-900">Technical Round - John Doe</h3>
-                                <p className="text-sm text-gray-500">Today at 2:00 PM</p>
-                            </div>
-                            <div className="rounded-lg border border-gray-200 p-4">
-                                <h3 className="font-medium text-gray-900">Group Discussion</h3>
-                                <p className="text-sm text-gray-500">Tomorrow at 11:00 AM</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {roomId && (
-                    <div className="mt-6 rounded-xl bg-white p-6 shadow-lg">
-                        <h2 className="mb-4 text-xl font-semibold text-gray-900">Interview Link</h2>
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1 rounded-lg bg-gray-50 p-4">
-                                <code className="text-sm text-gray-700">
-                                    {`${window.location.origin}/room/${roomId}`}
-                                </code>
-                            </div>
-                            <button
-                                onClick={copyToClipboard}
-                                className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200"
-                            >
-                                Copy
-                            </button>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-500">
-                            Share this link with candidates to join the interview
-                        </p>
-                    </div>
-                )}
-            </div>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Company Dashboard</h1>
+  
+        {/* CSV Upload Button */}
+        <div className="mb-4 flex items-center gap-3">
+          <label
+            htmlFor="csvUpload"
+            className="cursor-pointer inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            📄 Choose CSV File
+          </label>
+          <input
+            id="csvUpload"
+            type="file"
+            accept=".csv"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          {selectedFileName && (
+            <span className="text-gray-700 text-sm">{selectedFileName}</span>
+          )}
         </div>
-    );
-};
+  
+        {/* CSV Preview */}
+        {parsedData.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-2">CSV Preview</h2>
+  
+            {/* Desktop Table */}           
+            {/* Desktop Table */}
+            <div className="border border-gray-300 mb-4 overflow-hidden rounded hidden md:block">
+            <table className="w-full table-fixed border-collapse">
+                <thead className="bg-gray-100">
+                <tr>
+                    <th className="p-2 border w-1/5">Candidate Email</th>
+                    <th className="p-2 border w-1/5">Job Desc</th>
+                    <th className="p-2 border w-1/5">Role</th>
+                    <th className="p-2 border w-1/5">Skills</th>
+                    <th className="p-2 border w-1/5">Pointers</th>
+                    <th className="p-2 border w-1/5">Deadline</th>
+                </tr>
+                </thead>
+            </table>
 
-export default DashboardCompany;
+            {/* Scrollable Body */}
+            <div className="max-h-40 overflow-y-auto">
+                <table className="w-full table-fixed border-collapse">
+                <tbody>
+                    {parsedData.map((item, index) => (
+                    <tr key={index}>
+                        <td className="p-2 border">{item.candidateEmail}</td>
+                        <td className="p-2 border">{item.jobDesc}</td>
+                        <td className="p-2 border">{item.role}</td>
+                        <td className="p-2 border">{item.skills}</td>
+                        <td className="p-2 border">{item.pointers}</td>
+                        <td className="p-2 border">{item.deadline}</td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+            </div>
+            {/* Mobile List */}
+            <div className="md:hidden space-y-2 mb-4">
+              {parsedData.slice(0, 3).map((item, index) => (
+                <div
+                  key={index}
+                  className="border p-3 rounded shadow-sm bg-white"
+                >
+                  <p>
+                    <span className="font-semibold">Candidate Email:</span>{' '}
+                    {item.candidateEmail}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Job Desc:</span> {item.jobDesc}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Roll:</span> {item.role}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Skills:</span> {item.skills}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Pointers:</span>{' '}
+                    {item.pointers}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Deadline:</span>{' '}
+                    {item.deadline}
+                  </p>
+                </div>
+              ))}
+  
+              {parsedData.length > 3 && (
+                <p className="text-sm text-gray-500">
+                  Showing first 3 rows. Please scroll on desktop view to see more.
+                </p>
+              )}
+            </div>
+  
+            <button
+              onClick={handleSubmitToDatabase}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              Submit to Database
+            </button>
+          </div>
+        )}
+  
+        {/* Interviews List */}
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Interviews List</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-2 border">Candidate Email</th>
+                  <th className="p-2 border">Job Desc</th>
+                  <th className="p-2 border">Role</th>
+                  <th className="p-2 border">Skills</th>
+                  <th className="p-2 border">Pointers</th>
+                  <th className="p-2 border">Deadline</th>
+                </tr>
+              </thead>
+              <tbody>
+                {interviews.map((interview) => (
+                  <tr key={interview.id}>
+                    <td className="p-2 border">{interview.candidateEmail}</td>
+                    <td className="p-2 border">{interview.jobDesc}</td>
+                    <td className="p-2 border">{interview.role}</td>
+                    <td className="p-2 border">{interview.skills}</td>
+                    <td className="p-2 border">{interview.pointers}</td>
+                    <td className="p-2 border">{interview.deadline}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  export default DashboardCompany;

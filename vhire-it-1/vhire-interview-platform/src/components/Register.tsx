@@ -29,8 +29,11 @@ const Register: React.FC = () => {
                 email: user.email!,
                 role: role as 'candidate' | 'company' | 'interviewer'
             });
-            
-            navigate('/dashboard');
+            if(role == 'company'){
+                navigate('/companyform');
+            }else{
+                navigate('/dashboard');
+            }
         } catch (error: any) {
             setError(error.message || 'Registration failed. Please try again.');
             console.error('Registration error:', error);

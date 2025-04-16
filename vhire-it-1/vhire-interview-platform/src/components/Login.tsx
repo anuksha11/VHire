@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import AuthService from "../services/auth.service";
-
+import { db } from '../config/firebaseConfig'; 
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 const Login: React.FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -27,7 +28,20 @@ const Login: React.FC = () => {
                 role: userData.role,
             });
             
-            navigate('/dashboard');
+            if(userData.role ==='company'){
+                const companyRef = collection(db, 'company_users');
+                const q = query(companyRef, where('email', '==', userData.email));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    navigate('/companyform');
+                }
+                else{
+                    navigate('/dashboard');
+                }
+            }else{
+                navigate('/dashboard');
+            }
+            
         } catch (err: any) {
             console.error('Login error:', err);
             setError(err.message || 'Failed to login. Please try again.');

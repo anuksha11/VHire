@@ -17,6 +17,7 @@ const Home = lazy(() => import('./components/Home'));
 const RoomPage = lazy(() => import('./components/RoomPage'));
 const Profile = lazy(() => import('./components/Profile'));
 const Report = lazy(()=>import('./components/Report'))
+const CompanyForm = lazy(() => import('./components/company/companyForm'));
 // const NotFound = lazy(() => import('./components/NotFound')); // Create a NotFound.tsx
 
 const DashboardRouter: React.FC = () => {
@@ -86,6 +87,14 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <Report />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/companyform"
+                                    element={
+                                        <ProtectedRoute>
+                                            <CompanyForm />
                                         </ProtectedRoute>
                                     }
                                 />
