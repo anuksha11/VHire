@@ -13,6 +13,7 @@ import { Extension } from '@codemirror/state';
 import axios from "axios";
 import { db } from "../config/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
+import ReactMarkdown from 'react-markdown';
 
 const socket = io("http://localhost:5001");
 const languages: {
@@ -178,7 +179,7 @@ const RoomPage: React.FC = () => {
       };
 
     return (
-        <div className="flex h-screen w-full flex-col bg-gray-50 overflow-hidden">
+        <div className="flex h-screen w-full flex-col bg-gray-50 overflow-auto">
             <div className="w-full bg-white shadow-md p-4">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4">
@@ -215,9 +216,9 @@ const RoomPage: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1">
             {/* Left: Code Editor & Controls */}
-                <div className="w-[40%] p-4 flex flex-col mb-2 overflow-y-auto">
+                <div className="w-[40%] p-4 h-[500px] flex flex-col mb-2 overflow-y-auto">
                     <h2 className="text-xl font-semibold mb-2">Code Editor</h2>
                     <div className="mb-4 flex justify-between items-center">
                         <select
@@ -248,13 +249,13 @@ const RoomPage: React.FC = () => {
                     />
 
                     <h2 className="text-lg font-semibold">Output</h2>
-                    <pre className="output bg-gray-100 p-2 rounded overflow-auto">{output}</pre>
+                    <pre className="h-full output bg-gray-100 p-2 rounded overflow-auto">{output}</pre>
                 </div>
 
                 {/* Right: Video Container */}
                 <div
                     ref={videoContainerRef}
-                    className="w-[60%] h-[500px] flex items-center justify-center"
+                    className="w-[60%] h-[500px] flex items-center justify-center overflow-y-auto"
                 />
             </div>
            
@@ -293,9 +294,13 @@ const RoomPage: React.FC = () => {
                     </div>
 
                     {aiResponse && (
-                        <div className="mt-4 p-4 bg-gray-100 rounded-md border h-[15vh] overflow-y-auto">
+                        <div className="mt-4 p-4 bg-gray-100 rounded-md border h-[30vh] overflow-y-auto">
                             <h3 className="font-semibold text-gray-800 mb-2">AI Response:</h3>
-                            <p className="text-gray-700 whitespace-pre-wrap">{aiResponse}</p>
+                            <div className="prose prose-sm text-gray-700 max-w-none">
+                                <ReactMarkdown>
+                                    {aiResponse}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     )}
                 </div>

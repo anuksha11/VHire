@@ -27,7 +27,7 @@ const Register: React.FC = () => {
                 id: user.uid,
                 name,
                 email: user.email!,
-                role: role as 'candidate' | 'company' | 'interviewer'
+                role: role as 'candidate' | 'company' | 'interviewer' | 'admin'
             });
             if(role == 'company'){
                 navigate('/companyform');

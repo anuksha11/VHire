@@ -5,4 +5,4 @@
 /logs
 /temp
 .env
-
+/firebaseServiceKey.json
