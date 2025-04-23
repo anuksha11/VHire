@@ -9,6 +9,11 @@ const DashboardCompany: React.FC = () => {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [candidateEmails, setCandidateEmails] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [filters, setFilters] = useState({
+    role: '',
+    interviewStatus: '',
+    rating: ''
+  });  
   const [formValues, setFormValues] = useState({
     role: '',
     deadline: '',
@@ -157,6 +162,32 @@ const DashboardCompany: React.FC = () => {
   
     setInterviews(interviewsData);
   };
+  const downloadInterviewDetails = (interview: any) => {
+    const content = Object.entries(interview)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+  
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${interview.candidateEmail}_interview.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };  
+  
+  const filteredInterviews = interviews.filter(interview => {
+    const roleMatch = filters.role === '' || interview.role.toLowerCase().includes(filters.role.toLowerCase());
+    const statusMatch = filters.interviewStatus === '' || interview.interview_status === filters.interviewStatus;
+    const ratingMatch = filters.rating === '' || interview.rating === filters.rating;
+  
+    return roleMatch && statusMatch && ratingMatch;
+  });
   
   useEffect(() => {
     fetchInterviews();
@@ -211,8 +242,44 @@ const DashboardCompany: React.FC = () => {
         Submit to Database
       </button>
 
+      
       {/* Interviews List */}
       <div className="mt-6">
+      <div className="mb-4 flex flex-wrap gap-4 items-center">
+        <input
+          type="text"
+          name="role"
+          value={filters.role}
+          onChange={handleFilterChange}
+          placeholder="Filter by Role"
+          className="p-2 border rounded"
+        />
+        <select
+          name="interviewStatus"
+          value={filters.interviewStatus}
+          onChange={handleFilterChange}
+          className="p-2 border rounded"
+        >
+          <option value="">All Interview Statuses</option>
+          <option value="not scheduled">Not Scheduled</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select
+          name="rating"
+          value={filters.rating}
+          onChange={handleFilterChange}
+          className="p-2 border rounded"
+        >
+          <option value="">All Ratings</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="NA">NA</option>
+        </select>
+      </div>
         <h2 className="text-xl font-semibold mb-2">Interviews List</h2>
         <div className="overflow-x-auto">
           <table className="w-full border border-gray-300">
@@ -225,10 +292,11 @@ const DashboardCompany: React.FC = () => {
                 <th className="p-2 border"> Status</th>
                 <th className="p-2 border">Verdict</th>
                 <th className="p-2 border"> Rating</th>
+                <th className="p-2 border">Download</th>
               </tr>
             </thead>
             <tbody>
-              {interviews.map((interview, index) => (
+              {filteredInterviews.map((interview, index) => (
                 <tr key={index}>
                   <td className="p-2 border">{interview.candidateEmail}</td>
                   <td className="p-2 border">{interview.role}</td>
@@ -237,6 +305,14 @@ const DashboardCompany: React.FC = () => {
                   <td className="p-2 border">{interview.status}</td>
                   <td className="p-2 border">{interview.verdict}</td>
                   <td className="p-2 border">{interview.rating}</td>
+                  <td className="p-2 border">
+                    <button
+                      onClick={() => downloadInterviewDetails(interview)}
+                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-sm"
+                    >
+                      Download
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
