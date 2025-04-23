@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import { db } from '../../config/firebaseConfig';
 import { useUser } from '../../context/UserContext';
@@ -7,8 +6,6 @@ import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 const DashboardCompany: React.FC = () => {
-  const navigate = useNavigate();
-  const [roomId, setRoomId] = useState('');
   const [interviews, setInterviews] = useState<any[]>([]);
   const [candidateEmails, setCandidateEmails] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -20,7 +17,6 @@ const DashboardCompany: React.FC = () => {
     pointers: ''
   });
   const { user, login } = useUser();
-
   const getCompanyNameByEmail = async () => {
     const companyRef = collection(db, 'company_users');
     const querySnapshot = await getDocs(query(companyRef, where("email", "==", user?.email)));
@@ -38,6 +34,7 @@ const DashboardCompany: React.FC = () => {
       skipEmptyLines: true,
       complete: (results: Papa.ParseResult<any>) => {
         const data = results.data
+        .slice(1)
         .map((row: any) => String(Object.values(row)[0])) // Ensure type is string
         .filter((value) => Boolean(value));
       setCandidateEmails(data);
@@ -48,6 +45,25 @@ const DashboardCompany: React.FC = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const sendWelcomeEmails = async (emails: string[]) => {
+    try {
+      const response = await fetch('http://localhost:5001/send-welcome-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails })
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Welcome emails sent successfully.");
+      } else {
+        console.error("Error sending emails:", data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleSubmitToDatabase = async () => {
@@ -80,7 +96,7 @@ const DashboardCompany: React.FC = () => {
       };
       await addDoc(interviewsRef, interviewData);
     }
-
+    await sendWelcomeEmails(candidateEmails);
     setCandidateEmails([]);
     setSelectedFileName('');
     setFormValues({ role: '', deadline: '', jobDesc: '', skills: '', pointers: '' });
@@ -90,16 +106,58 @@ const DashboardCompany: React.FC = () => {
   const fetchInterviews = async () => {
     const interviewsRef = collection(db, 'interviews');
     const companyName = await getCompanyNameByEmail();
+  
     if (!companyName) {
       console.error('No company found for this email.');
       return;
     }
+  
     const q = query(interviewsRef, where("companyName", "==", companyName));
     const querySnapshot = await getDocs(q);
-    const interviewsData = querySnapshot.docs.map(doc => doc.data());
+  
+    const interviewsData = await Promise.all(querySnapshot.docs.map(async (doc) => {
+      const interview = doc.data();
+      const interviewId = interview.interview_id;
+      const interviewStatus = interview.interview_status;
+  
+      // Check if interview status is eligible for fetching report
+      if (interviewStatus === "completed") {
+        const reportRef = collection(db, 'interview_report');
+        const reportQuery = query(reportRef, where("interview_id", "==", interviewId));
+        const reportSnapshot = await getDocs(reportQuery);
+  
+        let reportData = {
+          verdict: "NA",
+          status: "NA",
+          rating: "NA"
+        };
+  
+        if (!reportSnapshot.empty) {
+          const reportDoc = reportSnapshot.docs[0].data(); // assuming one-to-one mapping
+          reportData = {
+            verdict: reportDoc.verdict || "NA",
+            status: reportDoc.status || "NA",
+            rating: reportDoc.rating || "NA",
+          };
+        }
+  
+        return {
+          ...interview,
+          ...reportData
+        };
+      } else {
+        return {
+          ...interview,
+          verdict: "NA",
+          status: "NA",
+          rating: "NA"
+        };
+      }
+    }));
+  
     setInterviews(interviewsData);
   };
-
+  
   useEffect(() => {
     fetchInterviews();
   }, []);
@@ -161,22 +219,24 @@ const DashboardCompany: React.FC = () => {
             <thead>
               <tr className="bg-gray-100">
                 <th className="p-2 border">Candidate Email</th>
-                <th className="p-2 border">Job Desc</th>
                 <th className="p-2 border">Role</th>
-                <th className="p-2 border">Skills</th>
-                <th className="p-2 border">Pointers</th>
                 <th className="p-2 border">Deadline</th>
+                <th className="p-2 border">Interview Status</th>
+                <th className="p-2 border"> Status</th>
+                <th className="p-2 border">Verdict</th>
+                <th className="p-2 border"> Rating</th>
               </tr>
             </thead>
             <tbody>
               {interviews.map((interview, index) => (
                 <tr key={index}>
                   <td className="p-2 border">{interview.candidateEmail}</td>
-                  <td className="p-2 border">{interview.jobDesc}</td>
                   <td className="p-2 border">{interview.role}</td>
-                  <td className="p-2 border">{interview.skills}</td>
-                  <td className="p-2 border">{interview.pointers}</td>
                   <td className="p-2 border">{interview.deadline}</td>
+                  <td className="p-2 border">{interview.interview_status}</td>
+                  <td className="p-2 border">{interview.status}</td>
+                  <td className="p-2 border">{interview.verdict}</td>
+                  <td className="p-2 border">{interview.rating}</td>
                 </tr>
               ))}
             </tbody>

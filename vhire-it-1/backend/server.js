@@ -4,6 +4,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require("axios");
+const nodemailer = require('nodemailer');
+const validator = require("validator");
 require('dotenv').config();
 
 const app = express();
@@ -163,6 +165,58 @@ app.get('/check-payment-status', async (req, res) => {
   } catch (err) {
     console.error('Check payment error:', err);
     res.status(500).send('Error verifying payment.');
+  }
+});
+
+
+//sending welcome emails.
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,       // your Gmail address
+    pass: process.env.EMAIL_PASS        // your Gmail App Password
+  }
+});
+
+app.post('/send-welcome-emails', async (req, res) => {
+  const { emails } = req.body;
+
+  if (!emails || !Array.isArray(emails)) {
+    return res.status(400).json({ error: 'Invalid email list' });
+  }
+
+  try {
+    for (const email of emails) {
+      console.log("Checking email:", email);
+  
+      // Skip invalid emails
+      if (!validator.isEmail(email)) {
+        console.warn("Invalid email skipped:", email);
+        continue;
+      }
+  
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Welcome to VHire Platform!',
+        html: `
+          <p>Dear Candidate,</p>
+          <p>We are excited to have you onboard for the interview process.</p>
+          <p>Please <a href="https://vhire.vercel.app/register" target="_blank">register</a> on our VHire platform to proceed with interviews and receive further notifications.</p>
+          <br/>
+          <p>Regards,<br/>VHire Team</p>
+        `
+      };
+  
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent to: ${email}`);
+    }
+  
+    res.status(200).json({ message: 'Emails sent successfully' });
+    console.log("All valid emails processed successfully");
+  } catch (error) {
+    console.error('Error sending emails:', error);
+    res.status(500).json({ error: 'Failed to send emails' });
   }
 });
 
