@@ -19,7 +19,7 @@ const Profile: React.FC = () => {
 
         setLoading(true);
         setError(null);
-
+ 
         try {
             // Only include fields that have changed
             const updates: { name?: string; email?: string; role?: string } = {};

@@ -31,13 +31,26 @@ const Register: React.FC = () => {
             });
             if(role == 'company'){
                 navigate('/companyform');
-            }else{
-                navigate('/dashboard');
+            }else if(role == 'candidate'){
+                navigate('/candidateform');
+            }else if(role == 'interviewer'){
+                navigate('/interviewerform')
             }
         } catch (error: any) {
-            setError(error.message || 'Registration failed. Please try again.');
             console.error('Registration error:', error);
-        } finally {
+            const errorMessage = error.message || 'Registration failed. Please try again.';
+        
+            if (
+                error.code === 'auth/email-already-in-use' || 
+                errorMessage.toLowerCase().includes('email already in use') || 
+                errorMessage.toLowerCase().includes('already registered')
+            ) {
+                setError('This email is already registered. Redirecting to login...');
+                setTimeout(() => navigate('/login'), 3000); // Redirect after 3s
+            } else {
+                setError(errorMessage);
+            }
+        }finally {
             setLoading(false);
         }
     };

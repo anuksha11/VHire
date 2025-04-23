@@ -27,6 +27,8 @@ const Login: React.FC = () => {
                 email: user.email!,
                 role: userData.role,
             });
+
+            console.log(userData);
             
             if(userData.role ==='company'){
                 const companyRef = collection(db, 'company_users');
@@ -38,8 +40,27 @@ const Login: React.FC = () => {
                 else{
                     navigate('/dashboard');
                 }
-            }else{
-                navigate('/dashboard');
+            }else if(userData.role ==='candidate'){
+                const companyRef = collection(db, 'candidate_users');
+                const q = query(companyRef, where('email', '==', userData.email));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    navigate("/candidateform");
+                }
+                else{
+                    navigate('/dashboard');
+                }
+            }else if(userData.role ==='interviewer'){
+                console.log("I am here")
+                const companyRef = collection(db, 'interviewer_users');
+                const q = query(companyRef, where('email', '==', userData.email));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    navigate("/interviewerform")
+                }
+                else{
+                    navigate('/dashboard');
+                }
             }
             
         } catch (err: any) {

@@ -3,7 +3,7 @@ import { db } from '../../config/firebaseConfig'; // Firebase config
 import { collection, addDoc ,query, where, getDocs} from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import { useNavigate } from "react-router-dom";
-const CompanyForm: React.FC = () => {
+const ProfileFormCompany: React.FC = () => {
     const [companyName, setCompanyName] = useState('');
     const [companyType, setCompanyType] = useState('');
     const [yearEstablished, setYearEstablished] = useState('');
@@ -165,4 +165,4 @@ const CompanyForm: React.FC = () => {
     );
 };
 
-export default CompanyForm;
+export default ProfileFormCompany;
