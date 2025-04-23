@@ -74,7 +74,9 @@ const DashboardCompany: React.FC = () => {
         interviewerEmail: '',
         timing: '',
         roomId: '',
-        interview_status: 'not scheduled'
+        interview_status: 'not scheduled',
+        verifiedCandidateEmail: '',
+        verifiedInterviewerEmail: ''
       };
       await addDoc(interviewsRef, interviewData);
     }
