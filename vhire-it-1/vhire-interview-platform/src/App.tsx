@@ -20,7 +20,9 @@ const Home = lazy(() => import('./components/Home'));
 const RoomPage = lazy(() => import('./components/RoomPage'));
 const Profile = lazy(() => import('./components/Profile'));
 const Report = lazy(()=>import('./components/Report'))
-const CompanyForm = lazy(() => import('./components/company/companyForm'));
+const ProfileCandidateForm = lazy(()=> import('./components/candidate/ProfileFormCandidate'));
+const ProfileFormInterviewer = lazy(()=> import('./components/interviewer/ProfileFormInterviewer'));
+const ProfileFormCompany = lazy(()=> import('./components/company/ProfileFormCompany'));
 // const NotFound = lazy(() => import('./components/NotFound')); // Create a NotFound.tsx
 
 const DashboardRouter: React.FC = () => {
@@ -99,7 +101,23 @@ const App: React.FC = () => {
                                     path="/companyform"
                                     element={
                                         <ProtectedRoute>
-                                            <CompanyForm />
+                                            <ProfileFormCompany/>
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/candidateform"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProfileCandidateForm/>
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/interviewerform"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProfileFormInterviewer/>
                                         </ProtectedRoute>
                                     }
                                 />
