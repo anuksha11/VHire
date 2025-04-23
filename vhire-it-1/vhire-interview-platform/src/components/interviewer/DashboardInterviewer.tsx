@@ -63,10 +63,19 @@ const DashboardInterviewer: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-4xl space-y-8">
-        <header>
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900">Interviewer Dashboard</h1>
-          <p className="text-gray-600 mt-2">Conduct interviews with candidates</p>
-        </header>
+          <p className="text-gray-600 mt-1">Conduct interviews with candidates</p>
+        </div>
+        <button
+          onClick={() => navigate('/paymentdashboard')}
+          className="mt-2 md:mt-0 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 transition"
+        >
+          Interviews and Payment history
+        </button>
+      </header>
+
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Start Interview Card */}

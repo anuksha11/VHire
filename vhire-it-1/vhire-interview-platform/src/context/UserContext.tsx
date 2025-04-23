@@ -4,7 +4,7 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: 'candidate' | 'company' | 'interviewer' | null;
+    role: 'candidate' | 'company' | 'interviewer' | 'admin' | null;
 }
 
 interface UserContextType {

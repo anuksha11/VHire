@@ -6,6 +6,8 @@ import { UserProvider } from './context/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useUser } from './context/UserContext';
 import CreateScheduleMeet from './components/interviewer/CreateScheduleMeet';
+import PaymentSuccess from './components/admin/PaymentSuccess';
+const PaymentDashboard = lazy(() => import('./components/interviewer/PaymentDashboard'));
 
 // Lazy loading components for performance optimization
 const Login = lazy(() => import('./components/Login'));
@@ -13,6 +15,7 @@ const Register = lazy(() => import('./components/Register'));
 const DashboardCandidate = lazy(() => import('./components/candidate/DashboardCandidate'));
 const DashboardCompany = lazy(() => import('./components/company/DashboardCompany'));
 const DashboardInterviewer = lazy(() => import('./components/interviewer/DashboardInterviewer'));
+const DashboardAdmin = lazy(() => import('./components/admin/DashboardAdmin'));
 const Home = lazy(() => import('./components/Home'));
 const RoomPage = lazy(() => import('./components/RoomPage'));
 const Profile = lazy(() => import('./components/Profile'));
@@ -32,6 +35,8 @@ const DashboardRouter: React.FC = () => {
             return <DashboardCompany />;
         case 'interviewer':
             return <DashboardInterviewer />;
+        case 'admin':
+            return <DashboardAdmin/>;
         default:
             return <Navigate to="/login" replace />;
     }
@@ -113,6 +118,22 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <ProfileFormInterviewer/>
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/payment-success"
+                                    element={
+                                        <ProtectedRoute>
+                                        <PaymentSuccess />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/paymentdashboard"
+                                    element={
+                                        <ProtectedRoute>
+                                        <PaymentDashboard />
                                         </ProtectedRoute>
                                     }
                                 />

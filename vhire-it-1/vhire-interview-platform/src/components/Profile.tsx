@@ -10,7 +10,7 @@ const Profile: React.FC = () => {
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
-        role: (user?.role || 'candidate') as 'candidate' | 'company' | 'interviewer'
+        role: (user?.role || 'candidate') as 'candidate' | 'company' | 'interviewer' | 'admin'
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,12 +106,13 @@ const Profile: React.FC = () => {
                                 <select
                                     id="role"
                                     value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'candidate' | 'company' | 'interviewer' })}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'candidate' | 'company' | 'interviewer' | 'admin' })}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 >
                                     <option value="candidate">Candidate</option>
                                     <option value="interviewer">Interviewer</option>
                                     <option value="company">Company</option>
+                                    <option value="admin">Admin</option>
                                 </select>
                             </div>
 
