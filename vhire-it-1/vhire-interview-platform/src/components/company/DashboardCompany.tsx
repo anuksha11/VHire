@@ -65,7 +65,7 @@ const DashboardCompany: React.FC = () => {
         candidateEmail: email,
         jobDesc: formValues.jobDesc,
         role: formValues.role,
-        skills: formValues.skills,
+        skills: formValues.skills.split(',').map(skill => skill.trim()),
         pointers: formValues.pointers,
         deadline: formValues.deadline,
         companyName: companyName,
@@ -122,7 +122,7 @@ const DashboardCompany: React.FC = () => {
         <input name="role" value={formValues.role} onChange={handleFormChange} placeholder="Role" className="w-full p-2 border rounded" required />
         <input name="deadline" type="date" value={formValues.deadline} onChange={handleFormChange} className="w-full p-2 border rounded" required />
         <textarea name="jobDesc" value={formValues.jobDesc} onChange={handleFormChange} placeholder="Job Description" className="w-full p-2 border rounded" required />
-        <input name="skills" value={formValues.skills} onChange={handleFormChange} placeholder="Skills Required" className="w-full p-2 border rounded" required />
+        <input name="skills" value={formValues.skills} onChange={handleFormChange} placeholder="Skills Required (comma separated)" className="w-full p-2 border rounded" required />
         <input name="pointers" value={formValues.pointers} onChange={handleFormChange} placeholder="Pointers" className="w-full p-2 border rounded" required />
       </div>
 
