@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useUser } from './context/UserContext';
 import CreateScheduleMeet from './components/interviewer/CreateScheduleMeet';
 import PaymentSuccess from './components/admin/PaymentSuccess';
+import ScheduleInterview from './components/interviewer/ScheduleInterview';
 const PaymentDashboard = lazy(() => import('./components/interviewer/PaymentDashboard'));
 
 // Lazy loading components for performance optimization
@@ -86,6 +87,14 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <CreateScheduleMeet />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/scheduleinterview/:recruitmentId"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ScheduleInterview/>
                                         </ProtectedRoute>
                                     }
                                 />
