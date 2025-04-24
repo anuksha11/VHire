@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../config/firebaseConfig';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 
-interface Interview {
-  id: string;
-  interviewerEmail: string;
-  candidateEmail: string;
-  interviewType: string;
-  exactTiming: string;
-  roomId: string;
+// interface Interview {
+//   id: string;
+//   interviewerEmail: string;
+//   candidateEmail: string;
+//   interviewType: string;
+//   exactTiming: string;
+//   roomId: string;
+// }
+
+interface UpcomingInterviews {
+  companyName: string,
+  interview_id: string,
+  interview_status: string,
+  jobDesc: string,
+  pointers: string,
+  role: string,
+  recruitment_id: string,
+  skills: string[],
+  deadline: string,
+  roomId: string,
+  candidateEmail: string,
+  timing: string,
 }
 
 const DashboardCandidate: React.FC = () => {
@@ -18,33 +33,50 @@ const DashboardCandidate: React.FC = () => {
   const [roomId, setRoomId] = useState('');
   const [name, setName] = useState('');
   const { user } = useUser();
-  const [upcomingInterviews, setUpcomingInterviews] = useState<Interview[]>([]);
-  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
+  const [upcomingInterviews, setUpcomingInterviews] = useState<UpcomingInterviews[]>([]);
+  const [selectedInterview, setSelectedInterview] = useState<UpcomingInterviews | null>(null);
 
+  const fetchInterviews = async () => {
+    try {
+      const q = query(
+        collection(db, "interviews"),
+        where("candidateEmail", "==", user?.email),
+        where("interview_status", "==", "scheduled")
+      )
+      const snapshots = await getDocs(q);
+
+      const data: UpcomingInterviews[] = snapshots.docs.map((doc) => {
+        const d = doc.data();
+        // const formatedTiming = formatTimestamp(d.timing.toString())
+        return {
+          companyName: d.companyName || "",
+          interview_id: doc.id,
+          interview_status: d.interview_status || "",
+          jobDesc: d.jobDesc || "",
+          pointers: d.pointers || "",
+          role: d.role || "",
+          recruitment_id: d.recruitment_id || "",
+          skills: d.skills || [],
+          deadline: d.deadline || "",
+          roomId: d.roomId || "",
+          candidateEmail: d.candidateEmail || "",
+          timing: d.timing || ""
+        };
+      });
+      console.log(data);
+      setUpcomingInterviews(data);
+      
+    } catch (error) {
+      console.error('Error fetching interviews: ', error);
+    }
+  };
   useEffect(() => {
-    const fetchInterviews = async () => {
-      try {
-        const interviewsCollection = collection(db, 'InterviewScheduled');
-        const interviewSnapshot = await getDocs(interviewsCollection);
-        const interviewsList = interviewSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Interview[];
-        const filteredInterviews = interviewsList.filter(
-          interview => interview.candidateEmail === user?.email
-        );
-        setUpcomingInterviews(filteredInterviews);
-      } catch (error) {
-        console.error('Error fetching interviews: ', error);
-      }
-    };
-
     if (user) fetchInterviews();
   }, [user]);
 
   const handleJoinMeet = () => {
     if (selectedInterview && user && user.email === selectedInterview.candidateEmail) {
-        console.log(selectedInterview);
+      console.log(selectedInterview);
       navigate(
         `room/${selectedInterview.roomId}?type=one-on-one&name=${encodeURIComponent(user.name)}`
       );
@@ -52,11 +84,11 @@ const DashboardCandidate: React.FC = () => {
   };
 
   const handleUrgentJoinMeet = () => {
-        if(user){
-            navigate(
-                `room/${roomId}?type=one-on-one&name=${encodeURIComponent(name)}`
-            );
-        }
+    if (user) {
+      navigate(
+        `room/${roomId}?type=one-on-one&name=${encodeURIComponent(name)}`
+      );
+    }
   }
 
   return (
@@ -109,18 +141,16 @@ const DashboardCandidate: React.FC = () => {
 
           <section className="bg-white rounded-2xl shadow p-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Upcoming Interviews</h2>
-            <div className="space-y-4 max-h-64 overflow-y-auto">
-              {upcomingInterviews.length > 0 ? (
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {upcomingInterviews.length ? (
                 upcomingInterviews.map(interview => (
                   <button
-                    key={interview.id}
+                    key={interview.interview_id}
                     onClick={() => setSelectedInterview(interview)}
-                    className={`w-full text-left rounded-lg border p-4 transition hover:bg-gray-100 ${
-                      selectedInterview?.id === interview.id ? 'border-blue-500' : 'border-gray-200'
-                    }`}
+                    className="w-full text-left rounded-lg border border-gray-200 p-4 hover:bg-gray-100"
                   >
-                    <h3 className="font-medium text-gray-900">{interview.interviewType}</h3>
-                    <p className="text-sm text-gray-500">{interview.exactTiming}</p>
+                    <h3 className="font-medium text-gray-900">{interview.companyName} - {interview.candidateEmail}</h3>
+                    <p className="text-sm text-gray-500">{interview.timing.toString()}</p>
                   </button>
                 ))
               ) : (
@@ -131,21 +161,36 @@ const DashboardCandidate: React.FC = () => {
         </div>
 
         {selectedInterview && (
-          <section className="bg-white rounded-2xl shadow p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Interview Details</h2>
-            <div className="space-y-2 text-gray-700">
-              <p><strong>Interview Type:</strong> {selectedInterview.interviewType}</p>
-              <p><strong>Interviewer Email:</strong> {selectedInterview.interviewerEmail}</p>
-              <p><strong>Exact Timing:</strong> {selectedInterview.exactTiming}</p>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow-xl space-y-4 relative">
+            <button
+              onClick={() => setSelectedInterview(null)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold text-gray-900">Interview Details</h2>
+            <p><strong>Company:</strong> {selectedInterview.companyName}</p>
+            <p><strong>Candidate:</strong> {selectedInterview.candidateEmail}</p>
+            <p><strong>Role:</strong> {selectedInterview.role}</p>
+            <p><strong>Status:</strong> {selectedInterview.interview_status}</p>
+            <p><strong>Skills:</strong> {selectedInterview.skills.join(", ")}</p>
+            <p><strong>Job Description:</strong> {selectedInterview.jobDesc}</p>
+            <p><strong>Pointers:</strong> {selectedInterview.pointers}</p>
+            <p><strong>Timing:</strong> {selectedInterview.timing}</p>
+
             <button
               onClick={handleJoinMeet}
-              className="mt-4 w-full rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              Join Meet
+              Join Interview
             </button>
-          </section>
-        )}
+          </div>
+        </div>
+      )}
+
+        
       </div>
     </div>
   );
