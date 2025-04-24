@@ -12,7 +12,8 @@ import { javascript } from "@codemirror/lang-javascript";
 import { Extension } from '@codemirror/state';
 import axios from "axios";
 import { db } from "../config/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, query, where, getDocs, updateDoc } from "firebase/firestore";
+
 import ReactMarkdown from 'react-markdown';
 
 const socket = io("http://localhost:5001");
@@ -103,23 +104,51 @@ const RoomPage: React.FC = () => {
             onJoinRoom: ()=>{
                 console.log(user);
             },
-            onLeaveRoom: () => {
-                if (user?.role === 'interviewer') {
-                    navigate('/report', {
-                        state: {
-                            roomId
+            onLeaveRoom: async () => {
+                try {
+                    // Update interview_report for both roles
+                    const reportRef = doc(db, "interview_report", roomId);
+                    if (user?.role === 'interviewer') {
+                        // await setDoc(reportRef, {
+                        //     interviewerEmail: user.email
+                        // }, { merge: true });
+                    } else if (user?.role === 'candidate') {
+                        await setDoc(reportRef, {
+                            candidateEmail: user.email
+                        }, { merge: true });
+                    }
+            
+                    // Find the matching document in 'interviews' collection
+                    const querySnapshot = await getDocs(query(
+                        collection(db, "interviews"),
+                        where("roomId", "==", roomId)
+                    ));
+            
+                    if (!querySnapshot.empty) {
+                        const docRef = querySnapshot.docs[0].ref;
+                        if (user?.role === 'interviewer') {
+                            await updateDoc(docRef, {
+                                verifiedInterviewerEmail: user.email
+                            });
+                            navigate('/report', { state: { roomId } });
+                        } else if (user?.role === 'candidate') {
+                            await updateDoc(docRef, {
+                                verifiedCandidateEmail: user.email
+                            });
+                            navigate('/dashboard');
+                        } else {
+                            navigate('/dashboard');
                         }
-                    });
-                } else if (user?.role === 'candidate') {
-                    // Update the document with candidate email when they join
-                    setDoc(doc(db, "interview_report", roomId), {
-                        candidateEmail: user.email
-                    }, { merge: true });
-                    navigate('/dashboard');
-                } else {
+                    } else {
+                        console.warn("No matching interview doc found.");
+                        navigate('/dashboard');
+                    }
+                } catch (error) {
+                    console.error("Error updating interview document:", error);
                     navigate('/dashboard');
                 }
-            },
+            }
+            
         });
         
         // return () => zp.destroy();
