@@ -126,14 +126,22 @@ app.post('/create-payment-link', async (req, res) => {
       callback_method: 'get',
     });
     console.log("Payment link created:", link.id);
-    await db.collection('interviewer_payment_info').doc(email).set({
+    const snapshot = await db.collection('interviewer_payment_info').where('Interview_id', '==', interviewId).get();
+  
+  if (!snapshot.empty) {
+    const docRef = snapshot.docs[0].ref; // Assuming only one doc per email
+    await docRef.set({
       interviewer_email_id: email,
-      upi_id: upiId,
+      upid_id: upiId,
       Interview_id: interviewId,
       payment_info: link.short_url,
       payment_id: link.id,
       payment_status: 'pending',
-    });
+    }, { merge: true });
+  } else {
+    console.log('No document found for this email.');
+  }
+  
 
     res.json({ short_url: link.short_url });
   } catch (err) {
@@ -146,16 +154,23 @@ app.get('/check-payment-status', async (req, res) => {
   const { email, interviewId } = req.query;
 
   try {
-    const snapshot = await db.collection('interviewer_payment_info').doc(email).get();
-    const paymentInfo = snapshot.data();
-    if (!paymentInfo) return res.status(404).send('No record found.');
+    const snapshot = await db.collection('interviewer_payment_info')
+      .where('Interview_id', '==', interviewId)
+      .get();
+
+    if (snapshot.empty) return res.status(404).send('No record found.');
+
+    const doc = snapshot.docs[0];
+    const paymentInfo = doc.data();
+    const docRef = doc.ref;
 
     const paymentLinkId = paymentInfo.payment_id;
-    console.log("link at server",paymentLinkId);
+    console.log("link at server", paymentLinkId);
+
     const razorResponse = await razorpay.paymentLink.fetch(paymentLinkId);
 
     if (razorResponse.status === 'paid') {
-      await db.collection('interviewer_payment_info').doc(email).update({
+      await docRef.update({
         payment_status: 'received',
       });
       return res.send('✅ Payment verified and recorded in Firebase.');
@@ -167,6 +182,7 @@ app.get('/check-payment-status', async (req, res) => {
     res.status(500).send('Error verifying payment.');
   }
 });
+
 
 
 //sending welcome emails.

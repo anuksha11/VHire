@@ -7,7 +7,7 @@ import axios from 'axios';
 interface InterviewPaymentInfo {
   id: string;
   interviewer_email_id: string;
-  upi_id: string;
+  upid_id: string;
   Interview_id: string;
   payment_info: string;
   payment_status: string;
@@ -75,7 +75,7 @@ const DashboardAdmin: React.FC = () => {
 
     try {
       const res = await axios.post('http://localhost:5001/create-payment-link', {
-        upiId: entry.upi_id,
+        upiId: entry.upid_id,
         amount: 100,
         name: entry.interviewer_email_id.split('@')[0],
         email: entry.interviewer_email_id,
@@ -118,7 +118,7 @@ const DashboardAdmin: React.FC = () => {
                 <tr key={entry.id} className="border-b hover:bg-gray-50">
                   <td className="px-3 py-2">{entry.Interview_id}</td>
                   <td className="px-3 py-2 break-words max-w-xs">{entry.interviewer_email_id}</td>
-                  <td className="px-3 py-2 break-words max-w-xs">{entry.upi_id}</td>
+                  <td className="px-3 py-2 break-words max-w-xs">{entry.upid_id}</td>
                   <td className="px-3 py-2 capitalize">{entry.payment_status}</td>
                   <td className="px-3 py-2">
                     <button
