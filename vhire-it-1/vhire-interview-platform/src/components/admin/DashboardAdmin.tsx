@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from "../../config/firebaseConfig";
 import axios from 'axios';
 
@@ -18,28 +19,56 @@ const DashboardAdmin: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const snap = await getDocs(collection(db, 'interviewer_payment_info'));
-      const data = snap.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as InterviewPaymentInfo[];
-
-      // Filter out received payments
-      const pending = data.filter(item => item.payment_status !== 'received');
-
-      // Sort by Interview_id timestamp descending (INT-<timestamp>)
-      pending.sort((a, b) => {
+      const paymentSnap = await getDocs(collection(db, 'interviewer_payment_info'));
+      const interviewSnap = await getDocs(collection(db, 'interviews'));
+  
+      const paymentsData = paymentSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as InterviewPaymentInfo[];
+  
+      const interviewsMap = new Map<string, any>();
+      interviewSnap.docs.forEach(doc => {
+        const data = doc.data();
+        interviewsMap.set(data.interview_id, data);
+      });
+  
+      const validPayments: InterviewPaymentInfo[] = [];
+  
+      for (const payment of paymentsData) {
+        if (payment.payment_status === 'received') continue;
+  
+        const interview = interviewsMap.get(payment.Interview_id);
+        if (
+          !interview ||
+          interview.verifiedCandidateEmail !== interview.candidateEmail ||
+          interview.verifiedInterviewerEmail !== interview.interviewerEmail
+        ) {
+          // Delete invalid entry from Firebase
+          try {
+            await deleteDoc(doc(db, 'interviewer_payment_info', payment.id));
+            console.log(`Deleted invalid entry with ID: ${payment.id}`);
+          } catch (err) {
+            console.error(`Error deleting entry ${payment.id}:`, err);
+          }
+          continue;
+        }
+  
+        validPayments.push(payment);
+      }
+  
+      validPayments.sort((a, b) => {
         const timeA = parseInt(a.Interview_id.split('-')[1]);
         const timeB = parseInt(b.Interview_id.split('-')[1]);
         return timeB - timeA;
       });
-
-      setPayments(pending);
+  
+      setPayments(validPayments);
     };
-
+  
     fetchData();
   }, []);
+  
 
   const handlePayment = async (entry: InterviewPaymentInfo) => {
     setLoadingId(entry.id);

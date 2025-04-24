@@ -11,6 +11,8 @@ const DashboardCompany: React.FC = () => {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [candidateEmails, setCandidateEmails] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [filters, setFilters] = useState({
     role: '',
     interviewStatus: '',
@@ -111,12 +113,16 @@ const DashboardCompany: React.FC = () => {
   };
 
   const handleSubmitToDatabase = async () => {
+    if (isSubmitting) return; // Prevent double submission
+    setIsSubmitting(true);
+    try {
     const companyName = await getCompanyNameByEmail();
     if (!companyName || !formValues.role || !formValues.deadline || !formValues.jobDesc || !formValues.skills || !formValues.pointers) {
       console.log(companyName);
       console.log(formValues);
       
       alert("All form fields are required.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -148,6 +154,11 @@ const DashboardCompany: React.FC = () => {
     setSelectedFileName('');
     setFormValues({ role: '', deadline: '', jobDesc: '', skills: '', pointers: '' });
     fetchInterviews();
+    }catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false); // Reset the flag at the end
+    }
   };
 
   const fetchInterviews = async () => {
@@ -295,24 +306,29 @@ const DashboardCompany: React.FC = () => {
         />
         <input name="pointers" value={formValues.pointers} onChange={handleFormChange} placeholder="Pointers" className="w-full p-2 border rounded" required />
       </div>
-
-      {/* Preview Section */}
-      {candidateEmails.length > 0 && (
+      <button
+        onClick={() => setShowPreview(prev => !prev)}
+        className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mb-4"
+      >
+        {showPreview ? "Hide Preview" : "Show Preview"}
+      </button>
+      
+      {showPreview && candidateEmails.length > 0 && (
         <div className="mb-4">
-          <h2 className="text-lg font-semibold">Preview</h2>
-          <ul className="list-disc pl-5 mb-4">
-            {candidateEmails.map((email, index) => (
-              <li key={index}>{email}</li>
-            ))}
-          </ul>
-          <div className="p-4 bg-gray-100 rounded">
-            <p><strong>Role:</strong> {formValues.role}</p>
-            <p><strong>Deadline:</strong> {formValues.deadline}</p>
-            <p><strong>Job Description:</strong> {formValues.jobDesc}</p>
-            <p><strong>Skills Required:</strong> {formValues.skills}</p>
-            <p><strong>Pointers:</strong> {formValues.pointers}</p>
-          </div>
+        <h2 className="text-lg font-semibold">Preview</h2>
+        <ul className="list-disc pl-5 mb-4">
+          {candidateEmails.map((email, index) => (
+            <li key={index}>{email}</li>
+          ))}
+        </ul>
+        <div className="p-4 bg-gray-100 rounded">
+          <p><strong>Role:</strong> {formValues.role}</p>
+          <p><strong>Deadline:</strong> {formValues.deadline}</p>
+          <p><strong>Job Description:</strong> {formValues.jobDesc}</p>
+          <p><strong>Skills Required:</strong> {formValues.skills}</p>
+          <p><strong>Pointers:</strong> {formValues.pointers}</p>
         </div>
+      </div>
       )}
 
       {/* Submit Button */}

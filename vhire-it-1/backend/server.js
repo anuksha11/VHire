@@ -220,6 +220,38 @@ app.post('/send-welcome-emails', async (req, res) => {
   }
 });
 
+// POST /api/sendInterviewScheduledEmail
+app.post("/api/sendInterviewScheduledEmail", async (req, res) => {
+  const { email, date, time, interviewer } = req.body;
+
+  const mailOptions = {
+    from: `"VHire Interviews" <${process.env.EMAIL_ID}>`,
+    to: email,
+    subject: "Your Interview is Scheduled",
+    html: `
+      <p>Dear Candidate,</p>
+      <p>We are pleased to inform you that your interview has been scheduled.
+      </p>
+      <ul>
+        <li><strong>Date:</strong> ${date}</li>
+        <li><strong>Time:</strong> ${time}</li>
+        <li><strong>Interviewer:</strong> ${interviewer}</li>
+      </ul>
+      <p>Please be available at least 10 minutes prior to the scheduled time and ensure you have a stable internet connection and a quiet environment. Further details regarding the interview platform and room link will be shared with you shortly. We appreciate your interest in the position and look forward to your participation in the upcoming interview.</p>
+      <p>Best of luck! </p>
+      <p>- VHire Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send("Email sent");
+  } catch (error) {
+    console.error("Email error:", error);
+    res.status(500).send("Failed to send email");
+  }
+});
+
 // --- Start Server ---
 const PORT = 5001;
 server.listen(PORT, () => {
