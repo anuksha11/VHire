@@ -118,6 +118,9 @@ const DashboardCompany: React.FC = () => {
     try {
     const companyName = await getCompanyNameByEmail();
     if (!companyName || !formValues.role || !formValues.deadline || !formValues.jobDesc || !formValues.skills || !formValues.pointers) {
+      console.log(companyName);
+      console.log(formValues);
+      
       alert("All form fields are required.");
       setIsSubmitting(false);
       return;

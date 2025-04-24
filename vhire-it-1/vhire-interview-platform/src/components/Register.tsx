@@ -18,6 +18,11 @@ const Register: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        console.log(name);
+        console.log(email);
+        console.log(role);
+        
+        
 
         try {
             const user = await AuthService.register(email, password, name, role);
@@ -29,6 +34,8 @@ const Register: React.FC = () => {
                 email: user.email!,
                 role: role as 'candidate' | 'company' | 'interviewer' | 'admin'
             });
+            console.log(role);
+            
             if(role == 'company'){
                 navigate('/companyform');
             }else if(role == 'candidate'){

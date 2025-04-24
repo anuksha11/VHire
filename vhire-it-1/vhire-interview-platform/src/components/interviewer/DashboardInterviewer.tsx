@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../config/firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, Timestamp, where } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 
-interface Interview {
-  id: string;
-  interviewerEmail: string;
-  candidateEmail: string;
-  interviewType: string;
-  exactTiming: string;
-  roomId: string;
-  description?: string;
-}
+
 
 interface InterviewData {
   email: string;
@@ -32,6 +24,21 @@ interface SuggestedInterviews {
   deadline: string
 }
 
+interface UpcomingInterviews {
+  companyName: string,
+  interview_id: string,
+  interview_status: string,
+  jobDesc: string,
+  pointers: string,
+  role: string,
+  recruitment_id: string,
+  skills: string[],
+  deadline: string,
+  roomId: string,
+  candidateEmail: string,
+  timing: string,
+}
+
 interface GroupedInterviews {
   recruitment_id: string;
   interviews: SuggestedInterviews[];
@@ -42,12 +49,12 @@ const DashboardInterviewer: React.FC = () => {
   const [roomId, setRoomId] = useState('');
   const [name, setName] = useState('');
   const [callType, setCallType] = useState<'one-on-one' | 'group' | null>(null);
-  const [upcomingInterviews, setUpcomingInterviews] = useState<Interview[]>([]);
-  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
+  const [selectedInterview, setSelectedInterview] = useState<UpcomingInterviews | null>(null);
   const { user } = useUser();
   const [interviewerData, setInterviewerData] = useState<InterviewData>()
-  const [suggestedInterviewData, setSuggestedInterviewData] = useState<SuggestedInterviews[]>();
+  const [suggestedInterviewData, setSuggestedInterviewData] = useState<SuggestedInterviews[]>([]);
   const [groupedInterviewData, setGroupedInterviewData] = useState<GroupedInterviews[]>([]);
+  const [upcomingInterviewData, setUpcomingInterviewData] = useState<UpcomingInterviews[]>([]);
 
 
   const handleRoomIdGenerate = () => {
@@ -65,7 +72,7 @@ const DashboardInterviewer: React.FC = () => {
   };
 
   const handleJoinMeet = () => {
-    if (selectedInterview && user?.email === selectedInterview.interviewerEmail) {
+    if (selectedInterview && user?.email) {
       navigate(`room/${selectedInterview.roomId}?type=one-on-one&name=${encodeURIComponent(user.name)}`);
     }
   };
@@ -147,6 +154,51 @@ const DashboardInterviewer: React.FC = () => {
     }
   };
 
+  const fetchUpcominginterviewData = async () => {
+    try {
+      const q = query(
+        collection(db, "interviews"),
+        where("interviewerEmail", "==", user?.email),
+        where("interview_status", "==", "scheduled")
+      );
+
+      const snapshots = await getDocs(q);
+
+      const data: UpcomingInterviews[] = snapshots.docs.map((doc) => {
+        const d = doc.data();
+        // const formatedTiming = formatTimestamp(d.timing.toString())
+        return {
+          companyName: d.companyName || "",
+          interview_id: doc.id,
+          interview_status: d.interview_status || "",
+          jobDesc: d.jobDesc || "",
+          pointers: d.pointers || "",
+          role: d.role || "",
+          recruitment_id: d.recruitment_id || "",
+          skills: d.skills || [],
+          deadline: d.deadline || "",
+          roomId: d.roomId || "",
+          candidateEmail: d.candidateEmail || "",
+          timing: d.timing || ""
+        };
+      });
+      console.log(data);
+
+
+      setUpcomingInterviewData(data);
+    } catch (error) {
+      console.error("Error fetching upcoming interview data:", error);
+    }
+  };
+  const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+      <span className="font-medium text-gray-700 w-36 shrink-0">{label}:</span>
+      <span className="text-gray-800 text-sm">{value}</span>
+    </div>
+  );
+
+
+
 
   useEffect(() => {
     fetchInterviewerData();
@@ -156,6 +208,7 @@ const DashboardInterviewer: React.FC = () => {
     if (interviewerData) {
       console.log(interviewerData);
       fetchSuggestedInterviews();
+      fetchUpcominginterviewData();
     }
   }, [interviewerData])
 
@@ -196,33 +249,7 @@ const DashboardInterviewer: React.FC = () => {
 
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Schedule Card */}
           <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
-            {/* <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Today's Schedule</h2>
-              <button
-                onClick={() => navigate('/createschedulemeet')}
-                className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-              >
-                New Schedule
-              </button>
-            </div>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {upcomingInterviews.length ? (
-                upcomingInterviews.map(interview => (
-                  <button
-                    key={interview.id}
-                    onClick={() => setSelectedInterview(interview)}
-                    className="w-full text-left rounded-lg border border-gray-200 p-4 hover:bg-gray-100"
-                  >
-                    <h3 className="font-medium text-gray-900">{interview.interviewType} - {interview.candidateEmail}</h3>
-                    <p className="text-sm text-gray-500">{interview.exactTiming}</p>
-                  </button>
-                ))
-              ) : (
-                <p className="text-gray-500">No upcoming interviews scheduled.</p>
-              )}
-            </div> */}
 
             <div>
               <div className="flex justify-between items-center mb-2">
@@ -267,18 +294,18 @@ const DashboardInterviewer: React.FC = () => {
           <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Upcoming Schedule</h2>
-              
+
             </div>
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {upcomingInterviews.length ? (
-                upcomingInterviews.map(interview => (
+              {upcomingInterviewData.length ? (
+                upcomingInterviewData.map(interview => (
                   <button
-                    key={interview.id}
+                    key={interview.interview_id}
                     onClick={() => setSelectedInterview(interview)}
                     className="w-full text-left rounded-lg border border-gray-200 p-4 hover:bg-gray-100"
                   >
-                    <h3 className="font-medium text-gray-900">{interview.interviewType} - {interview.candidateEmail}</h3>
-                    <p className="text-sm text-gray-500">{interview.exactTiming}</p>
+                    <h3 className="font-medium text-gray-900">{interview.companyName} - {interview.candidateEmail}</h3>
+                    <p className="text-sm text-gray-500">{interview.timing.toString()}</p>
                   </button>
                 ))
               ) : (
@@ -325,25 +352,63 @@ const DashboardInterviewer: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Interview Details */}
         {selectedInterview && (
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Interview Details</h2>
-            <div className="space-y-2">
-              <p><strong>Type:</strong> {selectedInterview.interviewType}</p>
-              <p><strong>Description:</strong> {selectedInterview.description || 'N/A'}</p>
-              <p><strong>Candidate Email:</strong> {selectedInterview.candidateEmail}</p>
-              <p><strong>Timing:</strong> {selectedInterview.exactTiming}</p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+            <div className="relative bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl space-y-6 animate-fade-in max-h-[90vh] overflow-y-auto">
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedInterview(null)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+                aria-label="Close modal"
+              >
+                <span className="text-2xl">&times;</span>
+              </button>
+
+              {/* Header */}
+              <div className="text-center space-y-1">
+                <h2 className="text-2xl font-semibold text-gray-900">Interview Details</h2>
+                <p className="text-sm text-gray-500">
+                  Full information for the scheduled interview
+                </p>
+              </div>
+
+              {/* Details Grid */}
+              <div className="space-y-4">
+                <DetailRow label="Company" value={selectedInterview.companyName} />
+                <DetailRow label="Candidate Email" value={selectedInterview.candidateEmail} />
+                <DetailRow label="Role" value={selectedInterview.role} />
+                <DetailRow label="Status" value={selectedInterview.interview_status} />
+                <DetailRow
+                  label="Skills"
+                  value={
+                    <div className="flex flex-wrap gap-2">
+                      {selectedInterview.skills.map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  }
+                />
+                <DetailRow label="Job Description" value={selectedInterview.jobDesc} />
+                <DetailRow label="Pointers" value={selectedInterview.pointers} />
+                <DetailRow label="Scheduled Time" value={selectedInterview.timing} />
+              </div>
+
+              {/* Join Button */}
+              <button
+                onClick={handleJoinMeet}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                Join Interview
+              </button>
             </div>
-            <button
-              onClick={handleJoinMeet}
-              className="mt-4 w-full rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-            >
-              Join Meet
-            </button>
           </div>
         )}
+
 
         {/* Room ID Display */}
         {roomId && (

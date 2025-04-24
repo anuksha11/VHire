@@ -99,7 +99,7 @@ const Profile: React.FC = () => {
                                 />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                                     Role
                                 </label>
@@ -114,7 +114,7 @@ const Profile: React.FC = () => {
                                     <option value="company">Company</option>
                                     <option value="admin">Admin</option>
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div className="flex justify-end space-x-3">
                                 <button
