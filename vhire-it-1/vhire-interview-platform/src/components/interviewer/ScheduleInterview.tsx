@@ -138,12 +138,36 @@ const ScheduleInterview = () => {
         // Step 3: Wait for all updates to complete
         await Promise.all(updatePromises);
         console.log("All matching interviews updated.");
+
+        // Send email to the candidate
+      const emailResponse = await fetch("http://localhost:5001/api/sendInterviewScheduledEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: schedule.email,
+          date: schedule.date,
+          time: schedule.time,
+          interviewer: user?.email,
+          // roomId: generatedRoomId,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error(`Failed to send email to ${schedule.email}`);
+      } else {
+        console.log(`Email sent to ${schedule.email}`);
+      }
+
       } catch (error) {
         console.log(error);
         
       }
 
     })
+
+
 
     setIsOpen(false);
     

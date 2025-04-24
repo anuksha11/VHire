@@ -52,7 +52,7 @@ const Login: React.FC = () => {
                 }
             }else if(userData.role ==='interviewer'){
                 console.log("I am here")
-                const companyRef = collection(db, 'interviewer_users');
+                const companyRef = collection(db, 'interviewer_Users');
                 const q = query(companyRef, where('email', '==', userData.email));
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
