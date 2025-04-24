@@ -1,29 +1,67 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 import { db } from "../config/firebaseConfig";
-import { doc, updateDoc } from "firebase/firestore";
-
+import { doc, addDoc,updateDoc, getDocs, collection, query, where } from "firebase/firestore";
 const Report: React.FC = () => {
   const [rating, setRating] = useState<number>(0);
+  const [status, setStatus] = useState<string>('');
   const [verdict, setVerdict] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId } = location.state || {};
-
+  const {user,login}= useUser();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const interviewsQuery = query(
+        collection(db, "interviews"),
+        where("roomId", "==", roomId)
+      );
+      const interviewSnapshot = await getDocs(interviewsQuery);
+      const interviewDoc = interviewSnapshot.docs[0];
+      const interview_id = interviewDoc.data().interview_id;
+      const interviewDocRef = interviewDoc.ref;
       const reportRef = doc(db, "interview_report", roomId);
       await updateDoc(reportRef, {
         rating,
         verdict,
-        status: 'completed',
-        completedAt: new Date().toISOString()
+        status,
+        completedAt: new Date().toISOString(),
+        interview_id,
       });
-
+      await updateDoc(interviewDocRef, {
+        interview_status: "completed",
+      });
+  
+      if(user){
+        const interviewerEmail = user.email;
+        const interviewerQuery = query(
+          collection(db, "interviewer_Users"),
+          where("email", "==", interviewerEmail)
+        );
+        const interviewerSnapshot = await getDocs(interviewerQuery);
+        if (!interviewerSnapshot.empty) {
+          const interviewerDoc = interviewerSnapshot.docs[0];
+          const upiID = interviewerDoc.data().upiID;
+    
+          // Store in interviewer_payment_info
+          await addDoc(collection(db, "interviewer_payment_info"), {
+            Interview_id:interview_id,
+            upid_id:upiID,
+            interviewer_email_id: interviewerEmail,
+            payment_id:"",
+            payment_info:"",
+            payment_status: "pending",
+          });
+        } else {
+          console.warn("No matching interviewer found for email:", interviewerEmail);
+        }
+      }
+    // Fetch upiID from interviewerUsers collection
       navigate('/dashboard');
     } catch (error) {
       console.error("Error saving report:", error);
@@ -68,6 +106,20 @@ const Report: React.FC = () => {
             <textarea
               value={verdict}
               onChange={(e) => setVerdict(e.target.value)}
+              rows={4}
+              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your verdict about the candidate..."
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <textarea
+              value={verdict}
+              onChange={(e) => setStatus(e.target.value)}
               rows={4}
               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your verdict about the candidate..."
