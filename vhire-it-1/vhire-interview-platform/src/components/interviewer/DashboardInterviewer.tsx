@@ -266,13 +266,8 @@ const DashboardInterviewer: React.FC = () => {
           </div>
           <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Today's Schedule</h2>
-              <button
-                onClick={() => navigate('/createschedulemeet')}
-                className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-              >
-                New Schedule
-              </button>
+              <h2 className="text-xl font-semibold text-gray-900">Upcoming Schedule</h2>
+              
             </div>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {upcomingInterviews.length ? (
