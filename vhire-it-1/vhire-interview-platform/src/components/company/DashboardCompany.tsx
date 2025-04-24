@@ -4,6 +4,8 @@ import { db } from '../../config/firebaseConfig';
 import { useUser } from '../../context/UserContext';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import Select from 'react-select';
+
 
 const DashboardCompany: React.FC = () => {
   const [interviews, setInterviews] = useState<any[]>([]);
@@ -14,6 +16,43 @@ const DashboardCompany: React.FC = () => {
     interviewStatus: '',
     rating: ''
   });  
+  const skillSet = [
+    // Programming Languages
+    'C++', 'Java', 'Python', 'JavaScript', 'TypeScript', 'Go', 'Rust', 'C#', 'Swift', 'Kotlin', 'Ruby',
+
+    // Frontend
+    'React', 'Angular', 'Vue.js', 'HTML', 'CSS', 'Tailwind CSS', 'Next.js', 'Redux', 'SASS', 'Webpack',
+
+    // Backend
+    'Node.js', 'Express.js', 'Django', 'Flask', 'Spring Boot', 'GraphQL', 'REST APIs', 'gRPC',
+
+    // Mobile Development
+    'React Native', 'Flutter', 'Swift (iOS)', 'Kotlin (Android)',
+
+    // DevOps & Infrastructure
+    'Docker', 'Kubernetes', 'AWS', 'Azure', 'Google Cloud Platform (GCP)', 'CI/CD', 'Terraform', 'Linux', 'Nginx',
+
+    // Databases
+    'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'SQLite', 'Firebase', 'DynamoDB', 'Cassandra',
+
+    // Testing
+    'Jest', 'Mocha', 'Chai', 'Cypress', 'Selenium', 'JUnit', 'Testing Library',
+
+    // Data/AI/ML
+    'Pandas', 'NumPy', 'Scikit-learn', 'TensorFlow', 'PyTorch', 'Keras', 'OpenCV', 'Hugging Face Transformers', 'Matplotlib', 'SQL',
+
+    // Tools & Misc
+    'Git', 'GitHub', 'GitLab', 'VS Code', 'Postman', 'Figma', 'Agile', 'Scrum', 'Jira',
+
+    // System Design & Architecture
+    'System Design', 'Microservices', 'Event-Driven Architecture', 'Message Queues (Kafka, RabbitMQ)',
+
+    // Security
+    'OAuth2', 'JWT', 'OWASP', 'TLS/SSL', 'Penetration Testing',
+
+    // Web/App Dev Tags (for broad category)
+    'WebDev', 'AppDev', 'Full Stack', 'Frontend', 'Backend'
+];
   const [formValues, setFormValues] = useState({
     role: '',
     deadline: '',
@@ -188,6 +227,34 @@ const DashboardCompany: React.FC = () => {
   
     return roleMatch && statusMatch && ratingMatch;
   });
+
+  const downloadTableAsCSV = () => {
+    const headers = ['Candidate Email', 'Role', 'Deadline', 'Interview Status', 'Status', 'Verdict', 'Rating'];
+    const rows = filteredInterviews.map(interview => [
+      interview.candidateEmail,
+      interview.role,
+      interview.deadline,
+      interview.interview_status,
+      interview.status,
+      interview.verdict,
+      interview.rating
+    ]);
+  
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${val}"`).join(','))
+    ].join('\n');
+  
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'interviews.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
   
   useEffect(() => {
     fetchInterviews();
@@ -211,7 +278,18 @@ const DashboardCompany: React.FC = () => {
         <input name="role" value={formValues.role} onChange={handleFormChange} placeholder="Role" className="w-full p-2 border rounded" required />
         <input name="deadline" type="date" value={formValues.deadline} onChange={handleFormChange} className="w-full p-2 border rounded" required />
         <textarea name="jobDesc" value={formValues.jobDesc} onChange={handleFormChange} placeholder="Job Description" className="w-full p-2 border rounded" required />
-        <input name="skills" value={formValues.skills} onChange={handleFormChange} placeholder="Skills Required (comma separated)" className="w-full p-2 border rounded" required />
+        <Select
+          isMulti
+          options={skillSet.map(skill => ({ label: skill, value: skill }))}
+          value={formValues.skills ? formValues.skills.split(',').map(s => ({ label: s.trim(), value: s.trim() })) : []}
+          onChange={(selectedOptions) => {
+            const selectedSkills = selectedOptions.map((option) => option.value).join(', ');
+            setFormValues((prev) => ({ ...prev, skills: selectedSkills }));
+          }}
+          placeholder="Select skills..."
+          className="react-select-container"
+          classNamePrefix="react-select"
+        />
         <input name="pointers" value={formValues.pointers} onChange={handleFormChange} placeholder="Pointers" className="w-full p-2 border rounded" required />
       </div>
 
@@ -279,6 +357,13 @@ const DashboardCompany: React.FC = () => {
           <option value="5">5</option>
           <option value="NA">NA</option>
         </select>
+        <button
+            onClick={downloadTableAsCSV}
+            className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            📥 Download Table as CSV
+          </button>
+
       </div>
         <h2 className="text-xl font-semibold mb-2">Interviews List</h2>
         <div className="overflow-x-auto">

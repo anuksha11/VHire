@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 import { db } from "../config/firebaseConfig";
-import { doc, updateDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { doc, addDoc,updateDoc, getDocs, collection, query, where } from "firebase/firestore";
 const Report: React.FC = () => {
   const [rating, setRating] = useState<number>(0);
   const [status, setStatus] = useState<string>('');
@@ -10,7 +11,7 @@ const Report: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId } = location.state || {};
-
+  const {user,login}= useUser();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -35,6 +36,32 @@ const Report: React.FC = () => {
       await updateDoc(interviewDocRef, {
         interview_status: "completed",
       });
+  
+      if(user){
+        const interviewerEmail = user.email;
+        const interviewerQuery = query(
+          collection(db, "interviewer_Users"),
+          where("email", "==", interviewerEmail)
+        );
+        const interviewerSnapshot = await getDocs(interviewerQuery);
+        if (!interviewerSnapshot.empty) {
+          const interviewerDoc = interviewerSnapshot.docs[0];
+          const upiID = interviewerDoc.data().upiID;
+    
+          // Store in interviewer_payment_info
+          await addDoc(collection(db, "interviewer_payment_info"), {
+            Interview_id:interview_id,
+            upid_id:upiID,
+            interviewer_email_id: interviewerEmail,
+            payment_id:"",
+            payment_info:"",
+            payment_status: "pending",
+          });
+        } else {
+          console.warn("No matching interviewer found for email:", interviewerEmail);
+        }
+      }
+    // Fetch upiID from interviewerUsers collection
       navigate('/dashboard');
     } catch (error) {
       console.error("Error saving report:", error);
