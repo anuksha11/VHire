@@ -115,13 +115,13 @@ const DashboardInterviewer: React.FC = () => {
       );
 
       const snapshot = await getDocs(q);
-      console.log(snapshot.docs[0].data());
+      // console.log(snapshot.docs[0].data());
 
       const filteredResults = snapshot.docs
         .map(doc => ({ ...(doc.data() as SuggestedInterviews) }))
         .filter(doc => {
           if (Array.isArray(doc.skills)) {
-            console.log(doc)
+            // console.log(doc)
             const matches = doc.skills.filter((skill: string) =>
               interviewerData?.techSkills.includes(skill)
             );
@@ -130,7 +130,7 @@ const DashboardInterviewer: React.FC = () => {
           return false;
         });
 
-      console.log(filteredResults);
+      // console.log(filteredResults);
 
 
       const formattedData: SuggestedInterviews[] = filteredResults.map(doc => ({
@@ -145,7 +145,7 @@ const DashboardInterviewer: React.FC = () => {
         deadline: doc.deadline
       }));
 
-      console.log(formattedData);
+      // console.log(formattedData);
 
       setSuggestedInterviewData(formattedData);
 
@@ -182,7 +182,7 @@ const DashboardInterviewer: React.FC = () => {
           timing: d.timing || ""
         };
       });
-      console.log(data);
+      // console.log(data);
 
 
       setUpcomingInterviewData(data);
@@ -206,7 +206,7 @@ const DashboardInterviewer: React.FC = () => {
 
   useEffect(() => {
     if (interviewerData) {
-      console.log(interviewerData);
+      // console.log(interviewerData);
       fetchSuggestedInterviews();
       fetchUpcominginterviewData();
     }
@@ -224,7 +224,7 @@ const DashboardInterviewer: React.FC = () => {
           return acc;
         }, {} as Record<string, GroupedInterviews>)
       );
-      console.log(groupedArray);
+      // console.log(groupedArray);
 
       setGroupedInterviewData(groupedArray);
     }
@@ -401,7 +401,11 @@ const DashboardInterviewer: React.FC = () => {
               {/* Join Button */}
               <button
                 onClick={handleJoinMeet}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+                disabled={new Date() < new Date(selectedInterview.timing.replace(" at ", "T"))}
+                className={`w-full py-2 rounded-lg font-semibold transition
+    ${new Date() < new Date(selectedInterview.timing.replace(" at ", "T"))
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"}`}
               >
                 Join Interview
               </button>

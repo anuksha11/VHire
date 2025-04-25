@@ -8,6 +8,7 @@ import { useUser } from './context/UserContext';
 import CreateScheduleMeet from './components/interviewer/CreateScheduleMeet';
 import PaymentSuccess from './components/admin/PaymentSuccess';
 import ScheduleInterview from './components/interviewer/ScheduleInterview';
+import ProfileInterviewer from './components/interviewer/EditAndViewProfileInterviewer';
 const PaymentDashboard = lazy(() => import('./components/interviewer/PaymentDashboard'));
 
 // Lazy loading components for performance optimization
@@ -42,6 +43,20 @@ const DashboardRouter: React.FC = () => {
             return <Navigate to="/login" replace />;
     }
 };
+
+const ProfileRouter: React.FC = ()=>{
+    const {user} =useUser();
+    switch (user?.role) {
+        case 'candidate':
+            return <Profile />;
+        case 'company':
+            return <Profile />;
+        case 'interviewer':
+            return <ProfileInterviewer />;
+        default:
+            return <Navigate to="/login" replace />;
+    }
+}
 
 const App: React.FC = () => {
     return (
@@ -78,7 +93,7 @@ const App: React.FC = () => {
                                     path="/profile"
                                     element={
                                         <ProtectedRoute>
-                                            <Profile />
+                                            <ProfileRouter/>
                                         </ProtectedRoute>
                                     }
                                 />

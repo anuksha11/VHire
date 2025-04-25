@@ -24,22 +24,21 @@ const ScheduleInterview = () => {
   const { recruitmentId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-const [showSuccess, setShowSuccess] = useState(false);
-  const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
   const [interviewData, setInterviewData] = useState<SuggestedInterviews[] | null>(null);
-  const candidates = ["Candidate 1", "Candidate 2", "Candidate 3"];
   const [remainingCandidates, setRemainingCandidates] = useState(0);
   const [selectedCount, setSelectedCount] = useState<number>(1);
-  const { user } = useUser();
   const [schedules, setSchedules] = useState<
-    {
-      interview_id: string;
-      recruitment_id: string;
-      email: string;
-      date: string;
-      time: string;
-    }[]
+  {
+    interview_id: string;
+    recruitment_id: string;
+    email: string;
+    date: string;
+    time: string;
+  }[]
   >([]);
+  const navigate = useNavigate();
+  const { user } = useUser();
 
   const fetchInterview = async () => {
     if (!recruitmentId) return;
@@ -55,7 +54,7 @@ const [showSuccess, setShowSuccess] = useState(false);
         setRemainingCandidates(doc.length);
         const data = snapshot.docs
           .map(doc => ({ ...(doc.data() as SuggestedInterviews) }))
-        console.log(data);
+        // console.log(data);
         const formattedData: SuggestedInterviews[] = data.map(doc => ({
           companyName: doc.companyName,
           interview_id: doc.interview_id,
@@ -69,7 +68,7 @@ const [showSuccess, setShowSuccess] = useState(false);
           candidateEmail: doc.candidateEmail,
         }));
 
-        console.log(formattedData);
+        // console.log(formattedData);
 
         setInterviewData(formattedData);
 
@@ -83,34 +82,56 @@ const [showSuccess, setShowSuccess] = useState(false);
     fetchInterview();
   }, [recruitmentId]);
 
+  const isValidSchedule = () => {
+    if (!interviewData) return false;
+    return interviewData.slice(0, selectedCount).every((candidate, index) => {
+      const entry = schedules[index];
+      if (!entry || !entry.date || !entry.time) return false;
+      const deadline = new Date(candidate.deadline);
+      const selected = new Date(`${entry.date}T${entry.time}`);
+      return selected < deadline;
+    });
+  };
+
   const handleScheduleChange = (
     index: number,
     field: "date" | "time",
     value: string
   ) => {
     setSchedules((prev) => {
-      if (interviewData) {
-        const candidate = interviewData[index];
-        const updated = [...(prev || [])]; // Ensure prev is an array
-        updated[index] = {
-          ...(updated[index] || {
-            interview_id: candidate.interview_id,
-            recruitment_id: candidate.recruitment_id,
-            email: candidate.candidateEmail,
-          }),
-          [field]: value,
-        };
-        return updated; // Always return an array
-      }
-      return prev; // Return the previous state if interviewData is not available
+      if (!interviewData) return prev;
+      const updated = [...prev];
+      const candidate = interviewData[index];
+      const deadline = new Date(candidate.deadline);
+      const existing = updated[index] || {
+        interview_id: candidate.interview_id,
+        recruitment_id: candidate.recruitment_id,
+        email: candidate.candidateEmail,
+      };
+
+      updated[index] = {
+        ...existing,
+        [field]: value,
+      };
+
+      return updated;
     });
   };
+
   const handleSubmit = async () => {
     console.log("Scheduled Candidates:", schedules);
     if (!schedules) {
       //popup code
       console.log("scheduled data not found");
 
+    }
+
+    console.log(isValidSchedule());
+
+
+    if (!isValidSchedule()) {
+      alert("Please ensure all dates and times are filled and valid.");
+      return;
     }
 
     schedules.map(async (schedule) => {
@@ -144,25 +165,25 @@ const [showSuccess, setShowSuccess] = useState(false);
         console.log("All matching interviews updated.");
 
         // Send email to the candidate
-      const emailResponse = await fetch("http://localhost:5001/api/sendInterviewScheduledEmail", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: schedule.email,
-          date: schedule.date,
-          time: schedule.time,
-          interviewer: user?.email,
-          // roomId: generatedRoomId,
-        }),
-      });
+        const emailResponse = await fetch("http://localhost:5001/api/sendInterviewScheduledEmail", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: schedule.email,
+            date: schedule.date,
+            time: schedule.time,
+            interviewer: user?.email,
+            // roomId: generatedRoomId,
+          }),
+        });
 
-      if (!emailResponse.ok) {
-        console.error(`Failed to send email to ${schedule.email}`);
-      } else {
-        console.log(`Email sent to ${schedule.email}`);
-      }
+        if (!emailResponse.ok) {
+          console.error(`Failed to send email to ${schedule.email}`);
+        } else {
+          console.log(`Email sent to ${schedule.email}`);
+        }
 
       } catch (error) {
         console.log(error);
@@ -269,109 +290,110 @@ const [showSuccess, setShowSuccess] = useState(false);
       </div>
 
       {isOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
-    <div className="relative bg-white border border-gray-300 p-6 rounded-2xl w-[480px] max-h-[90vh] overflow-y-auto shadow-xl space-y-5 animate-fade-in">
-      <button
-        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-        onClick={() => setIsOpen(false)}
-      >
-        <X size={20} />
-      </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+          <div className="relative bg-white border border-gray-300 p-6 rounded-2xl w-[480px] max-h-[90vh] overflow-y-auto shadow-xl space-y-5 animate-fade-in">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
+              <X size={20} />
+            </button>
 
-      <div className="text-center space-y-1">
-        <h2 className="text-lg font-semibold text-gray-900">Schedule Candidates</h2>
-        <p className="text-sm text-gray-600">You can select up to {selectedCount} candidates.</p>
-      </div>
+            <div className="text-center space-y-1">
+              <h2 className="text-lg font-semibold text-gray-900">Schedule Candidates</h2>
+              <p className="text-sm text-gray-600">You can select up to {selectedCount} candidates.</p>
+            </div>
 
-      {interviewData.slice(0, selectedCount).map((candidate, index) => (
-        <div key={index} className="space-y-2 border-t pt-4">
-          <p className="text-sm font-medium text-gray-800">{candidate.candidateEmail}</p>
-          <div className="flex gap-2">
-            <input
-              type="date"
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              onChange={(e) =>
-                handleScheduleChange(index, "date", e.target.value)
-              }
-            />
-            <input
-              type="time"
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              onChange={(e) =>
-                handleScheduleChange(index, "time", e.target.value)
-              }
-            />
+            {interviewData.slice(0, selectedCount).map((candidate, index) => (
+              <div key={index} className="space-y-2 border-t pt-4">
+                <p className="text-sm font-medium text-gray-800">{candidate.candidateEmail}</p>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                    max={new Date(candidate.deadline).toISOString().split("T")[0]}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    onChange={(e) =>
+                      handleScheduleChange(index, "date", e.target.value)
+                    }
+                  />
+
+                  <input
+                    type="time"
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    onChange={(e) =>
+                      handleScheduleChange(index, "time", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                onClick={() => setShowConfirm(true)}
+                className={`px-4 py-2 rounded transition text-white ${isValidSchedule()
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-400 cursor-not-allowed"
+                  }`}
+                disabled={!isValidSchedule()}
+              >
+                Schedule
+              </button>
+            </div>
           </div>
         </div>
-      ))}
+      )}
 
-      <div className="flex justify-end gap-2 pt-4">
-        <button
-          onClick={() => setIsOpen(false)}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 transition"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => setShowConfirm(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-        >
-          Schedule
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-[360px] space-y-4 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 text-center">Confirm Scheduling</h3>
+            <p className="text-sm text-gray-600 text-center">
+              Are you sure you want to schedule these interviews?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handleSubmit();
+                  setShowConfirm(false);
+                  setShowSuccess(true);
+                }}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-{/* Confirmation Dialog */}
-{showConfirm && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-    <div className="bg-white rounded-xl shadow-xl p-6 w-[360px] space-y-4 animate-fade-in">
-      <h3 className="text-lg font-semibold text-gray-900 text-center">Confirm Scheduling</h3>
-      <p className="text-sm text-gray-600 text-center">
-        Are you sure you want to schedule these interviews?
-      </p>
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => setShowConfirm(false)}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 transition"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={async () => {
-            await handleSubmit();
-            setShowConfirm(false);
-            setShowSuccess(true);
-          }}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition"
-        >
-          Confirm
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-{/* Success Notification */}
-{showSuccess && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-    <div className="bg-white rounded-xl shadow-xl p-6 w-[360px] space-y-4 animate-fade-in">
-      <h3 className="text-lg font-semibold text-green-700 text-center">Success!</h3>
-      <p className="text-sm text-gray-600 text-center">
-        Interviews have been successfully scheduled.
-      </p>
-      <div className="flex justify-center">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-        >
-          Go to Dashboard
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* Success Notification */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-[360px] space-y-4 animate-fade-in">
+            <h3 className="text-lg font-semibold text-green-700 text-center">Success!</h3>
+            <p className="text-sm text-gray-600 text-center">
+              Interviews have been successfully scheduled.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
 
