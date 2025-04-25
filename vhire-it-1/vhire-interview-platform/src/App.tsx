@@ -9,6 +9,7 @@ import CreateScheduleMeet from './components/interviewer/CreateScheduleMeet';
 import PaymentSuccess from './components/admin/PaymentSuccess';
 import ScheduleInterview from './components/interviewer/ScheduleInterview';
 import ProfileInterviewer from './components/interviewer/EditAndViewProfileInterviewer';
+import ProfileCompany from './components/company/EditAndViewProfileCompany';
 const PaymentDashboard = lazy(() => import('./components/interviewer/PaymentDashboard'));
 
 // Lazy loading components for performance optimization
@@ -50,7 +51,7 @@ const ProfileRouter: React.FC = ()=>{
         case 'candidate':
             return <Profile />;
         case 'company':
-            return <Profile />;
+            return <ProfileCompany />;
         case 'interviewer':
             return <ProfileInterviewer />;
         default:
