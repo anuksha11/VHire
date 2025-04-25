@@ -62,6 +62,10 @@ const Login: React.FC = () => {
                     navigate('/dashboard');
                 }
             }
+            else if(userData.role ==='admin'){
+                console.log("I am here")
+                navigate('/dashboard')
+            }
             
         } catch (err: any) {
             console.error('Login error:', err);

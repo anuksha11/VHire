@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import AuthService from '../../services/auth.service';
 import { db } from '../../config/firebaseConfig';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 
 const ProfileInterviewer: React.FC = () => {
     const { user, login } = useUser();
@@ -11,23 +11,33 @@ const ProfileInterviewer: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [interviewerData, setInterviewerData] = useState<any>(null);
 
+    const fetchInterviewerProfile = async () => {
+        try {
+            const q = query(
+                collection(db, "interviewer_Users"),
+                where("email", "==", user?.email)
+            )
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                console.log(querySnapshot.docs[0]);
+                setInterviewerData(querySnapshot.docs[0].data());
+            }
+        } catch (err) {
+            console.error('Error fetching interviewer data:', err);
+        }
+    };
     useEffect(() => {
         if (user?.role === 'interviewer') {
-            const fetchInterviewerProfile = async () => {
-                try {
-                    const docRef = doc(db, 'interviewer_Users', user.id);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        setInterviewerData(docSnap.data());
-                    }
-                } catch (err) {
-                    console.error('Error fetching interviewer data:', err);
-                }
-            };
 
             fetchInterviewerProfile();
         }
     }, [user]);
+
+    useEffect(() => {
+        console.log(interviewerData);
+
+    }, [interviewerData])
 
     const handleChange = (field: string, value: string | string[]) => {
         setInterviewerData({ ...interviewerData, [field]: value });
@@ -42,8 +52,25 @@ const ProfileInterviewer: React.FC = () => {
 
         try {
             // Update interviewer Firestore doc
-            const docRef = doc(db, 'interviewer_Users', user.id);
-            await updateDoc(docRef, interviewerData);
+            const q = query(
+                collection(db, "interviewer_Users"),
+                where("email", "==", user?.email)
+            )
+            const snapshot = await getDocs(q);
+            const doc = snapshot.docs[0];
+            const docref = doc.ref;
+            await updateDoc(docref, {
+                fullName: interviewerData.fullName,
+                email: interviewerData.email,
+                phone: interviewerData.phone,
+                address: interviewerData.address,
+                linkedIn: interviewerData.linkedIn,
+                github: interviewerData.github,
+                currCompany: interviewerData.currCompany,
+                prevCompanies: interviewerData.prevCompanies,
+                techSkills: interviewerData.techSkills,
+                upiID: interviewerData.upiID,
+            })
 
             login({ ...user, name: interviewerData.fullName }); // update display name if changed
             setIsEditing(false);
@@ -60,23 +87,23 @@ const ProfileInterviewer: React.FC = () => {
         label,
         value,
         onChange,
-      }: {
+    }: {
         label: string;
         value: string;
         onChange: (val: string) => void;
-      }) => (
+    }) => (
         <div>
-          <label className="block text-sm font-medium text-gray-700">{label}</label>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+            <label className="block text-sm font-medium text-gray-700">{label}</label>
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
         </div>
-      );
-      
-    
+    );
+
+
     const Display = ({ label, value }: { label: string; value: string }) => (
         <div>
             <h3 className="text-sm font-medium text-gray-500">{label}</h3>
@@ -84,8 +111,8 @@ const ProfileInterviewer: React.FC = () => {
         </div>
     );
 
-    if(!user){
-        return(
+    if (!user) {
+        return (
             <div>
                 Loading...
             </div>

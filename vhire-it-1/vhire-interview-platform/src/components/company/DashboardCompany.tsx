@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import { db } from '../../config/firebaseConfig';
 import { useUser } from '../../context/UserContext';
@@ -11,10 +12,11 @@ const DashboardCompany: React.FC = () => {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [candidateEmails, setCandidateEmails] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isOpen, setIsopen] = useState<Boolean>(false);
   const [companyName, setCompanyName] = useState<string>();
+  const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
     role: '',
@@ -125,15 +127,15 @@ const DashboardCompany: React.FC = () => {
   };
 
   const handleSubmitToDatabase = async () => {
-    if (isSubmitting) return; // Prevent double submission
-    setIsSubmitting(true);
+    // if (isSubmitting) return; // Prevent double submission
+    // setIsSubmitting(true);
     try {
       if (!companyName || !formValues.role || !formValues.deadline || !formValues.jobDesc || !formValues.skills || !formValues.pointers) {
         console.log(companyName);
         console.log(formValues);
 
         alert("All form fields are required.");
-        setIsSubmitting(false);
+        // setIsSubmitting(false);
         return;
       }
 
@@ -165,11 +167,11 @@ const DashboardCompany: React.FC = () => {
       setSelectedFileName('');
       setFormValues({ role: '', deadline: '', jobDesc: '', skills: '', pointers: '' });
       fetchInterviews();
+      navigate('/dashboard');
+      setIsopen(false);
     } catch (error) {
       console.error("Submission error:", error);
-    } finally {
-      setIsSubmitting(false); // Reset the flag at the end
-    }
+    } 
   };
 
   const fetchInterviews = async () => {

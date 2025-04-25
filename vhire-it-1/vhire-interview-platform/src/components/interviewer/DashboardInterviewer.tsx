@@ -401,7 +401,7 @@ const DashboardInterviewer: React.FC = () => {
               {/* Join Button */}
               <button
                 onClick={handleJoinMeet}
-                disabled={new Date() < new Date(selectedInterview.timing.replace(" at ", "T"))}
+                // disabled={new Date() < new Date(selectedInterview.timing.replace(" at ", "T"))}
                 className={`w-full py-2 rounded-lg font-semibold transition
     ${new Date() < new Date(selectedInterview.timing.replace(" at ", "T"))
                     ? "bg-gray-400 cursor-not-allowed"

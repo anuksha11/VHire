@@ -82,16 +82,16 @@ const ScheduleInterview = () => {
     fetchInterview();
   }, [recruitmentId]);
 
-  const isValidSchedule = () => {
-    if (!interviewData) return false;
-    return interviewData.slice(0, selectedCount).every((candidate, index) => {
-      const entry = schedules[index];
-      if (!entry || !entry.date || !entry.time) return false;
-      const deadline = new Date(candidate.deadline);
-      const selected = new Date(`${entry.date}T${entry.time}`);
-      return selected < deadline;
-    });
-  };
+  // const isValidSchedule = () => {
+  //   if (!interviewData) return false;
+  //   return interviewData.slice(0, selectedCount).every((candidate, index) => {
+  //     const entry = schedules[index];
+  //     if (!entry || !entry.date || !entry.time) return false;
+  //     const deadline = new Date(candidate.deadline);
+  //     const selected = new Date(`${entry.date}T${entry.time}`);
+  //     return selected < deadline;
+  //   });
+  // };
 
   const handleScheduleChange = (
     index: number,
@@ -126,13 +126,13 @@ const ScheduleInterview = () => {
 
     }
 
-    console.log(isValidSchedule());
+    // console.log(isValidSchedule());
 
 
-    if (!isValidSchedule()) {
-      alert("Please ensure all dates and times are filled and valid.");
-      return;
-    }
+    // if (!isValidSchedule()) {
+    //   alert("Please ensure all dates and times are filled and valid.");
+    //   return;
+    // }
 
     schedules.map(async (schedule) => {
       console.log(schedule);
@@ -243,7 +243,7 @@ const ScheduleInterview = () => {
               className="px-2 py-1 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition disabled:opacity-40"
               disabled={selectedCount <= 1}
             >
-              –
+          
             </button>
 
             <input
@@ -332,11 +332,8 @@ const ScheduleInterview = () => {
             <div className="flex justify-end gap-2 pt-4">
               <button
                 onClick={() => setShowConfirm(true)}
-                className={`px-4 py-2 rounded transition text-white ${isValidSchedule()
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                disabled={!isValidSchedule()}
+                className={`px-4 py-2 rounded transition text-white bg-blue-600 hover:bg-blue-700`}
+                
               >
                 Schedule
               </button>

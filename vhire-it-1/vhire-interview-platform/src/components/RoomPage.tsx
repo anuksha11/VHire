@@ -209,7 +209,7 @@ const RoomPage: React.FC = () => {
 
     return (
         <div className="flex h-screen w-full flex-col bg-gray-50 overflow-auto">
-            <div className="w-full bg-white shadow-md p-4">
+            {/* <div className="w-full bg-white shadow-md p-4">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4">
                         <h1 className="text-2xl font-bold text-gray-900">
@@ -244,7 +244,7 @@ const RoomPage: React.FC = () => {
                         Exit
                     </button>
                 </div>
-            </div>
+            </div> */}
             <div className="flex flex-1">
             {/* Left: Code Editor & Controls */}
                 <div className="w-[40%] p-4 h-[500px] flex flex-col mb-2 overflow-y-auto">

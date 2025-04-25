@@ -118,11 +118,11 @@ const Report: React.FC = () => {
               Status
             </label>
             <textarea
-              value={verdict}
+              value={status}
               onChange={(e) => setStatus(e.target.value)}
               rows={4}
               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter your verdict about the candidate..."
+              placeholder="Enter your status about the candidate..."
               required
             />
           </div>
