@@ -97,8 +97,33 @@ Components used by interviewers:
 1. Open "https://rapidapi.com" in your browser and signup with your gmail.
 2. In the "Search APIs" button type One Compiler APIs and select the api.
 3. Copy the "X-RapidAPI-Key"
+
+### How to Get Razorpay API Keys:
+
+1. Go to the [Razorpay Dashboard](https://dashboard.razorpay.com/).
+2. Sign in or create a free account.
+3. Navigate to **Settings > API Keys**.
+4. Click **"Generate Key"** (use **Test Mode** for development).
+5. Copy the following:
+   - **Key ID** → Use as `RAZORPAY_KEY_ID`
+   - **Key Secret** → Use as `RAZORPAY_KEY_SECRET`
+
    
 ## Steps to run the application
+###  Firebase Admin SDK Service Key (`firebaseServiceKey.json`)
+
+To securely interact with Firebase services like Firestore on the server, you need a service key file.
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Select your project.
+3. Navigate to **Project Settings** (gear icon).
+4. Click on the **Service accounts** tab.
+5. Click **"Generate new private key"**.
+6. It will download a file like: `firebase-adminsdk-xxxxx.json`.
+
+> Rename this file to `firebaseServiceKey.json` and place it securely in your **backend project directory**.  
+> Do **not** commit this file to version control (add it to `.gitignore`).
+
 ### Steps to run the backend:
 1. Clone the github repo:
    ```bash
@@ -125,12 +150,14 @@ Components used by interviewers:
    npm install (to install all node modules)
    ```
 7. Create a .env file in the backend directory.
-8. Paste the following in the .env file(paste your gemini and one compiler api keys along with this)
+8. Paste the following in the .env file(paste your gemini, razor pay and one compiler api keys along with this)
    ```
    GOOGLE_GENAI_API_KEY=
    RAPIDAPI_KEY=
    RAPIDAPI_HOST=onecompiler-apis.p.rapidapi.com
    ONE_COMPILER_API_URL=https://onecompiler-apis.p.rapidapi.com/api/v1/run
+   `RAZORPAY_KEY_ID`
+   `RAZORPAY_KEY_SECRET`
    ```
 9. Paste the following in the .env file(in vhire-interview-platform for frontend )
    ```
