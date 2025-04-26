@@ -65,7 +65,7 @@ const DashboardCandidate: React.FC = () => {
       });
       console.log(data);
       setUpcomingInterviews(data);
-      
+
     } catch (error) {
       console.error('Error fetching interviews: ', error);
     }
@@ -95,13 +95,13 @@ const DashboardCandidate: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="mx-auto max-w-5xl space-y-8">
         <header>
-          <h1 className="text-4xl font-bold text-gray-900">Candidate Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome {user?.name}</h1>
           <p className="mt-2 text-lg text-gray-600">Manage and join your interviews</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <section className="bg-white rounded-2xl shadow p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Join Interview</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Join Interview Now</h2>
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -143,16 +143,34 @@ const DashboardCandidate: React.FC = () => {
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Upcoming Interviews</h2>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {upcomingInterviews.length ? (
-                upcomingInterviews.map(interview => (
-                  <button
-                    key={interview.interview_id}
-                    onClick={() => setSelectedInterview(interview)}
-                    className="w-full text-left rounded-lg border border-gray-200 p-4 hover:bg-gray-100"
-                  >
-                    <h3 className="font-medium text-gray-900">{interview.companyName} - {interview.candidateEmail}</h3>
-                    <p className="text-sm text-gray-500">{interview.timing.toString()}</p>
-                  </button>
-                ))
+                <div className="space-y-4">
+                  {upcomingInterviews.map((interview) => (
+                    <button
+                      key={interview.interview_id}
+                      onClick={() => setSelectedInterview(interview)}
+                      className="w-full text-left rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {interview.companyName}
+                          </h3>
+                          <p className="text-sm text-gray-700">
+                            Candidate: <span className="font-medium">{interview.candidateEmail}</span>
+                          </p>
+                        </div>
+                        <div className="mt-2 sm:mt-0">
+                          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
+                            {new Date(interview.timing).toLocaleString('en-IN', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               ) : (
                 <p className="text-gray-500">No upcoming interviews scheduled.</p>
               )}
@@ -161,36 +179,36 @@ const DashboardCandidate: React.FC = () => {
         </div>
 
         {selectedInterview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
-          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow-xl space-y-4 relative">
-            <button
-              onClick={() => setSelectedInterview(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
+            <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow-xl space-y-4 relative">
+              <button
+                onClick={() => setSelectedInterview(null)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
 
-            <h2 className="text-xl font-bold text-gray-900">Interview Details</h2>
-            <p><strong>Company:</strong> {selectedInterview.companyName}</p>
-            <p><strong>Candidate:</strong> {selectedInterview.candidateEmail}</p>
-            <p><strong>Role:</strong> {selectedInterview.role}</p>
-            <p><strong>Status:</strong> {selectedInterview.interview_status}</p>
-            <p><strong>Skills:</strong> {selectedInterview.skills.join(", ")}</p>
-            <p><strong>Job Description:</strong> {selectedInterview.jobDesc}</p>
-            <p><strong>Pointers:</strong> {selectedInterview.pointers}</p>
-            <p><strong>Timing:</strong> {selectedInterview.timing}</p>
+              <h2 className="text-xl font-bold text-gray-900">Interview Details</h2>
+              <p><strong>Company:</strong> {selectedInterview.companyName}</p>
+              <p><strong>Candidate:</strong> {selectedInterview.candidateEmail}</p>
+              <p><strong>Role:</strong> {selectedInterview.role}</p>
+              <p><strong>Status:</strong> {selectedInterview.interview_status}</p>
+              <p><strong>Skills:</strong> {selectedInterview.skills.join(", ")}</p>
+              <p><strong>Job Description:</strong> {selectedInterview.jobDesc}</p>
+              <p><strong>Pointers:</strong> {selectedInterview.pointers}</p>
+              <p><strong>Timing:</strong> {selectedInterview.timing}</p>
 
-            <button
-              onClick={handleJoinMeet}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              Join Interview
-            </button>
+              <button
+                onClick={handleJoinMeet}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                Join Interview
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-        
+
       </div>
     </div>
   );

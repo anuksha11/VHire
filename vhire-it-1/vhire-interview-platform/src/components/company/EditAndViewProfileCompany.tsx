@@ -3,7 +3,7 @@ import { useUser } from '../../context/UserContext';
 import { db } from '../../config/firebaseConfig';
 import { collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
 
-// Memoized InputField to prevent unnecessary re-renders
+// InputField - memoized
 const InputField = React.memo(({
     label,
     value,
@@ -12,24 +12,22 @@ const InputField = React.memo(({
     label: string;
     value: string;
     onChange: (val: string) => void;
-}) => {
-    return (
-        <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">{label}</label>
-            <input
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-        </div>
-    );
-});
+}) => (
+    <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+        />
+    </div>
+));
 
 const Display = ({ label, value }: { label: string; value: string }) => (
-    <div className="mb-4">
-        <h3 className="text-sm font-medium text-gray-500">{label}</h3>
-        <p className="mt-1 text-sm text-gray-900">{value || '-'}</p>
+    <div className="flex flex-col">
+        <span className="text-xs font-medium text-gray-500">{label}</span>
+        <span className="text-base text-gray-800">{value || '-'}</span>
     </div>
 );
 
@@ -97,18 +95,22 @@ const ProfileCompany: React.FC = () => {
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) return (
+        <div className="flex justify-center items-center min-h-screen">
+            <div className="text-gray-600">Loading...</div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <div className="bg-white shadow rounded-lg p-6">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-10">
+            <div className="max-w-4xl mx-auto px-6">
+                <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">Profile</h2>
+                        <h2 className="text-3xl font-bold text-gray-800">Company Profile</h2>
                         {!isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
                             >
                                 Edit Profile
                             </button>
@@ -116,9 +118,9 @@ const ProfileCompany: React.FC = () => {
                     </div>
 
                     {isEditing ? (
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {user.role === 'company' && companyData ? (
-                                <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <InputField label="Company Name" value={companyData.companyName || ''} onChange={(val) => handleChange('companyName', val)} />
                                     <InputField label="Brief Description" value={companyData.briefDesc || ''} onChange={(val) => handleChange('briefDesc', val)} />
                                     <InputField label="Company Type" value={companyData.companyType || ''} onChange={(val) => handleChange('companyType', val)} />
@@ -126,38 +128,38 @@ const ProfileCompany: React.FC = () => {
                                     <InputField label="Special Message" value={companyData.specialMessage || ''} onChange={(val) => handleChange('specialMessage', val)} />
                                     <InputField label="Year Established" value={companyData.yearEstablished || ''} onChange={(val) => handleChange('yearEstablished', val)} />
                                     <InputField
-                                        label="Contacts"
+                                        label="Contacts (comma-separated)"
                                         value={companyData.contacts?.join(', ') || ''}
                                         onChange={(val) => handleChange('contacts', val.split(',').map((v) => v.trim()))}
                                     />
-                                </>
+                                </div>
                             ) : (
-                                <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <InputField label="Name" value={user.name || ''} onChange={(val) => handleChange('name', val)} />
                                     <InputField label="Email" value={user.email || ''} onChange={(val) => handleChange('email', val)} />
-                                </>
+                                </div>
                             )}
 
-                            <div className="flex justify-end gap-3 mt-4">
+                            <div className="flex justify-end gap-4 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => setIsEditing(false)}
-                                    className="px-4 py-2 bg-gray-100 rounded-md"
+                                    className="px-4 py-2 bg-gray-100 text-sm font-semibold text-gray-700 rounded-md hover:bg-gray-200 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md"
                                     disabled={loading}
+                                    className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition"
                                 >
                                     {loading ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
-                            {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+                            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
                         </form>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {user.role === 'company' && companyData ? (
                                 <>
                                     <Display label="Company Name" value={companyData.companyName} />
@@ -170,8 +172,8 @@ const ProfileCompany: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <Display label="Name" value={user?.name} />
-                                    <Display label="Email" value={user?.email} />
+                                    <Display label="Name" value={user.name} />
+                                    <Display label="Email" value={user.email} />
                                 </>
                             )}
                         </div>

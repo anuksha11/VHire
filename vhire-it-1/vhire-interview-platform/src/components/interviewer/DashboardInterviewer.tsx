@@ -48,7 +48,7 @@ const DashboardInterviewer: React.FC = () => {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState('');
   const [name, setName] = useState('');
-  const [callType, setCallType] = useState<'one-on-one' | 'group' | null>(null);
+  const [callType, setCallType] = useState<'one-on-one' | 'group' | null>('one-on-one');
   const [selectedInterview, setSelectedInterview] = useState<UpcomingInterviews | null>(null);
   const { user } = useUser();
   const [interviewerData, setInterviewerData] = useState<InterviewData>()
@@ -233,10 +233,10 @@ const DashboardInterviewer: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mx-auto max-w-6xl space-y-8">
+      <div className="mx-auto max-w-10xl space-y-8">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Interviewer Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome {user?.name}</h1>
             <p className="text-gray-600 mt-1">Conduct interviews with candidates</p>
           </div>
           <button
@@ -248,9 +248,9 @@ const DashboardInterviewer: React.FC = () => {
         </header>
 
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Suggested Interviews */}
+          <div className="rounded-xl bg-white p-6 shadow-lg overflow-y-auto max-h-screen space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-semibold text-gray-900">Suggested Interviews</h2>
@@ -258,47 +258,37 @@ const DashboardInterviewer: React.FC = () => {
               <div className="space-y-4">
                 {groupedInterviewData.map((group) => {
                   const recruitmentData = group.interviews[0];
-
                   return (
                     <button
                       key={group.recruitment_id}
                       className="relative w-full text-left rounded-2xl border border-gray-200 p-4 hover:bg-gray-100 shadow-sm"
-                      onClick={() => {
-                        navigate(`/scheduleinterview/${group.recruitment_id}`);
-                      }}
+                      onClick={() => navigate(`/scheduleinterview/${group.recruitment_id}`)}
                     >
-                      {/* Deadline in top right */}
-                      <span className="absolute top-4 right-4 text-sm text-gray-500">
+                      <span className="absolute top-4 right-4 text-xs font-medium text-white bg-red-500 px-2 py-0.5 rounded-full">
                         Deadline: {recruitmentData.deadline}
                       </span>
-
-                      {/* Company Info */}
-                      <p className="font-bold text-lg text-gray-900">
-                        {recruitmentData.companyName}
-                      </p>
-                      <p className="text-gray-800">
-                        Role: <span className="font-medium">{recruitmentData.role}</span>
-                      </p>
+                      <p className="text-lg font-semibold text-gray-900">{recruitmentData.companyName}</p>
                       <p className="text-gray-700">
-                        Skills:{" "}
-                        {recruitmentData.skills.join(", ")}
+                        <span className="font-medium">Role:</span> {recruitmentData.role}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Skills:</span> {recruitmentData.skills.join(', ')}
                       </p>
                     </button>
                   );
                 })}
               </div>
-
             </div>
-
           </div>
-          <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
+
+          {/* Upcoming Schedule */}
+          <div className="rounded-xl bg-white p-6 shadow-lg overflow-y-auto max-h-screen space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Upcoming Schedule</h2>
-
             </div>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-3">
               {upcomingInterviewData.length ? (
-                upcomingInterviewData.map(interview => (
+                upcomingInterviewData.map((interview) => (
                   <button
                     key={interview.interview_id}
                     onClick={() => setSelectedInterview(interview)}
@@ -314,44 +304,9 @@ const DashboardInterviewer: React.FC = () => {
             </div>
           </div>
 
-          {/* Start Interview Card */}
-          <div className="rounded-xl bg-white p-6 shadow-lg space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Start Interview Now</h2>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Your Name</label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setCallType('one-on-one')}
-                className={`rounded-lg px-4 py-2 text-center transition-colors ${callType === 'one-on-one' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                One on One
-              </button>
-              <button
-                onClick={() => setCallType('group')}
-                className={`rounded-lg px-4 py-2 text-center transition-colors ${callType === 'group' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Group Call
-              </button>
-            </div>
-            <button
-              onClick={handleRoomIdGenerate}
-              disabled={!name.trim() || !callType}
-              className="w-full rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
-            >
-              Generate Room ID
-            </button>
-          </div>
+          
         </div>
+
         {selectedInterview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
             <div className="relative bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl space-y-6 animate-fade-in max-h-[90vh] overflow-y-auto">
@@ -412,6 +367,28 @@ const DashboardInterviewer: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Start Interview */}
+        <div className="rounded-xl bg-white p-6 shadow-lg space-y-4 self-start">
+            <h2 className="text-xl font-semibold text-gray-900">Start Interview Now</h2>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Your Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
+              />
+            </div>
+            <button
+              onClick={handleRoomIdGenerate}
+              disabled={!name.trim() || !callType}
+              className="w-full rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              Generate Room ID
+            </button>
+          </div>
 
 
         {/* Room ID Display */}
