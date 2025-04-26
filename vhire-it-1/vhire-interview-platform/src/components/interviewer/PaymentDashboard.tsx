@@ -48,7 +48,7 @@ const PaymentDashboard: React.FC = () => {
             <thead>
               <tr className="bg-gray-100 text-gray-700 text-left">
                 <th className="p-3">Interview ID</th>
-                <th className="p-3">UPI ID</th>
+                {/* <th className="p-3">UPI ID</th> */}
                 <th className="p-3">Payment Info</th>
                 <th className="p-3">Payment Status</th>
               </tr>
@@ -57,7 +57,7 @@ const PaymentDashboard: React.FC = () => {
               {payments.map((p) => (
                 <tr key={p.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{p.Interview_id}</td>
-                  <td className="p-3">{p.upi_id}</td>
+                  {/* <td className="p-3">{p.upi_id}</td> */}
                   <td className="p-3">{p.payment_info}</td>
                   <td className="p-3">
                     <span

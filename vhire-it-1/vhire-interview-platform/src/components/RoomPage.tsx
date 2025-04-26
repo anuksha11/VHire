@@ -56,7 +56,7 @@ const RoomPage: React.FC = () => {
     const [copied, setCopied] = useState(false);
     const [aiPrompt, setAiPrompt] = useState("");
     const [aiResponse, setAiResponse] = useState("");
-    const [showAISection, setShowAISection] = useState(false);
+    const [showAISection, setShowAISection] = useState(true);
     const [output, setOutput] = useState("");
 
     const handleLeaveRoom = () => {
@@ -78,7 +78,7 @@ const RoomPage: React.FC = () => {
         
         const appID: number = APPID;
         const serverSecret: string = SERVERSECRET;
-        console.log(appID, serverSecret);
+        // console.log(appID, serverSecret);
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomId, Date.now().toString(), name?.toString() || "");
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zpRef.current = zp; 
@@ -290,7 +290,7 @@ const RoomPage: React.FC = () => {
            
             {user?.role === 'interviewer' && showAISection &&(
                 <div className="w-full p-4 bg-white shadow-md mt-8">
-                    <h2 className="text-xl font-semibold mb-2">Ask AI (Gemini)</h2>
+                    <h2 className="text-xl font-semibold mb-2">Ask AI</h2>
                     <div className="flex flex-col md:flex-row items-start gap-4">
                         <input
                             type="text"

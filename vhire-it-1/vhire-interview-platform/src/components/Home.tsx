@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
+    const navigate=useNavigate();
     return (
         <>
             <div className="layout-container flex h-full grow flex-col">
@@ -19,7 +21,7 @@ const Home: React.FC = () => {
                                             Your next great hire is one interview away
                                         </h1>
                                         <h2 className="text-white text-sm font-normal leading-normal @[480px]:text-base @[480px]:font-normal @[480px]:leading-normal">
-                                            Hire.me helps companies and interviewers conduct structured interviews that are fair and effective.
+                                            Vhire helps companies and interviewers conduct structured interviews that are fair and effective.
                                         </h2>
                                     </div>
                                     <button
@@ -61,7 +63,7 @@ const Home: React.FC = () => {
                                         style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/61669c3e-93d1-4d02-996f-56edf2e2ea8f.png")' }}
                                     ></div>
                                     <div>
-                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Hire.me</p>
+                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Vhire</p>
                                         <p className="text-[#3F5374] text-sm font-normal leading-normal">
                                             Write an interview question or use one of our templates. We'll help you make sure it's relevant to the job and not biased
                                         </p>
@@ -73,7 +75,7 @@ const Home: React.FC = () => {
                                         style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/707cd356-4d38-4bf6-8542-bf41e5f807af.png")' }}
                                     ></div>
                                     <div>
-                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Hire.me</p>
+                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Vhire</p>
                                         <p className="text-[#3F5374] text-sm font-normal leading-normal">
                                             Conduct an interview with a candidate. We'll help you structure the interview and avoid asking illegal questions
                                         </p>
@@ -85,7 +87,7 @@ const Home: React.FC = () => {
                                         style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/62a80569-58ad-409c-8650-544ef2e4787b.png")' }}
                                     ></div>
                                     <div>
-                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Hire.me</p>
+                                        <p className="text-[#141C24] text-base font-medium leading-normal">Interview with Vhire</p>
                                         <p className="text-[#3F5374] text-sm font-normal leading-normal">
                                             Review interview results. We'll help you evaluate your candidates fairly and make data-driven hiring decisions
                                         </p>
@@ -105,6 +107,9 @@ const Home: React.FC = () => {
                                 <div className="flex flex-1 justify-center">
                                     <div className="flex justify-center">
                                         <button
+                                            onClick={()=>{
+                                                navigate('/dashboard');
+                                            }}
                                             className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#F4C753] text-[#141C24] text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em] grow"
                                         >
                                             <span className="truncate">Get started</span>

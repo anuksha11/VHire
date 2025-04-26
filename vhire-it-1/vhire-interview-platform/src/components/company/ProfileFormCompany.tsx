@@ -68,7 +68,7 @@ const ProfileFormCompany: React.FC = () => {
             <h2 className="text-xl font-bold mb-4">Company Registration</h2>
 
             <div className="mb-4">
-                <label htmlFor="companyName" className="block text-sm font-medium">Company Name (Primary Key)</label>
+                <label htmlFor="companyName" className="block text-sm font-medium">Company Name</label>
                 <input
                     type="text"
                     id="companyName"

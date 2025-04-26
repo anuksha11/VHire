@@ -12,8 +12,9 @@ const DashboardCompany: React.FC = () => {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [candidateEmails, setCandidateEmails] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
   const [isOpen, setIsopen] = useState<Boolean>(false);
   const [companyName, setCompanyName] = useState<string>();
   const navigate = useNavigate();
@@ -127,15 +128,15 @@ const DashboardCompany: React.FC = () => {
   };
 
   const handleSubmitToDatabase = async () => {
-    // if (isSubmitting) return; // Prevent double submission
-    // setIsSubmitting(true);
+    if (isSubmitting) return; // Prevent double submission
+    setIsSubmitting(true);
     try {
       if (!companyName || !formValues.role || !formValues.deadline || !formValues.jobDesc || !formValues.skills || !formValues.pointers) {
         console.log(companyName);
         console.log(formValues);
 
         alert("All form fields are required.");
-        // setIsSubmitting(false);
+        setIsSubmitting(false);
         return;
       }
 
@@ -171,7 +172,9 @@ const DashboardCompany: React.FC = () => {
       setIsopen(false);
     } catch (error) {
       console.error("Submission error:", error);
-    } 
+    } finally {
+      setIsSubmitting(false); // Reset loading state
+    }
   };
 
   const fetchInterviews = async () => {
@@ -457,10 +460,11 @@ const DashboardCompany: React.FC = () => {
                 {/* Submit */}
                 <div className="text-right">
                   <button
-                    type="submit"
-                    className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                    type="submit" // Ensure this is a submit button
+                    className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isSubmitting} // Disable button when submitting
                   >
-                    Submit to Vhire
+                    {isSubmitting ? 'Submitting...' : 'Submit to Vhire'} {/* Change button text based on loading state */}
                   </button>
                 </div>
               </form>

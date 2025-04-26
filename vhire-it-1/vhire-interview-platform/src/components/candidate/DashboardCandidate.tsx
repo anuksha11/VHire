@@ -161,10 +161,7 @@ const DashboardCandidate: React.FC = () => {
                         </div>
                         <div className="mt-2 sm:mt-0">
                           <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
-                            {new Date(interview.timing).toLocaleString('en-IN', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short',
-                            })}
+                            {interview.timing}
                           </span>
                         </div>
                       </div>
@@ -192,10 +189,9 @@ const DashboardCandidate: React.FC = () => {
               <p><strong>Company:</strong> {selectedInterview.companyName}</p>
               <p><strong>Candidate:</strong> {selectedInterview.candidateEmail}</p>
               <p><strong>Role:</strong> {selectedInterview.role}</p>
-              <p><strong>Status:</strong> {selectedInterview.interview_status}</p>
-              <p><strong>Skills:</strong> {selectedInterview.skills.join(", ")}</p>
+              {/* <p><strong>Status:</strong> {selectedInterview.interview_status}</p> */}
+              {/* <p><strong>Skills:</strong> {selectedInterview.skills.join(", ")}</p> */}
               <p><strong>Job Description:</strong> {selectedInterview.jobDesc}</p>
-              <p><strong>Pointers:</strong> {selectedInterview.pointers}</p>
               <p><strong>Timing:</strong> {selectedInterview.timing}</p>
 
               <button
